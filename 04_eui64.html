@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>04 – EUI-64: MAC → Interface ID</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#2a3550;--text:#e2e8f0;--dim:#64748b;--accent:#34d399;--accent2:#22d3ee;--green:#34d399;--red:#f87171;--orange:#fbbf24}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.noise{position:fixed;top:0;left:0;width:100%;height:100%;opacity:.03;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.container{max-width:800px;margin:0 auto;padding:40px 24px;position:relative;z-index:1}
+nav{display:flex;align-items:center;gap:16px;margin-bottom:48px}
+nav a{color:var(--dim);text-decoration:none;font-size:.9rem;transition:color .2s}nav a:hover{color:var(--accent)}
+.nav-sep{color:var(--border)}.nav-current{color:var(--text);font-weight:500}
+h1{font-size:1.8rem;font-weight:900;margin-bottom:8px}h1 span{color:var(--accent)}
+.subtitle{color:var(--dim);margin-bottom:40px;font-size:.95rem}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px}
+.section-title{font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.section h2{font-size:1.2rem;font-weight:700;margin-bottom:4px}
+.section-desc{color:var(--dim);font-size:.85rem;margin-bottom:24px}
+.steps-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:28px}
+.step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
+.step:last-child{margin-bottom:0}
+.step-num{font-family:'JetBrains Mono',monospace;font-size:.75rem;font-weight:700;color:var(--bg);background:var(--accent);width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-text{font-size:.9rem;line-height:1.5}
+.step-text code{font-family:'JetBrains Mono',monospace;background:rgba(52,211,153,.1);padding:2px 6px;border-radius:4px;font-size:.85rem;color:var(--accent)}
+.mac-display{font-family:'JetBrains Mono',monospace;font-size:1.4rem;text-align:center;padding:20px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;margin-bottom:24px;color:var(--accent);letter-spacing:.1em}
+.q-group{margin-bottom:18px}
+.q-label{font-size:.95rem;font-weight:500;margin-bottom:8px;line-height:1.5}
+.q-label code{font-family:'JetBrains Mono',monospace;background:rgba(52,211,153,.1);padding:2px 6px;border-radius:4px;font-size:.85rem;color:var(--accent)}
+input[type="text"]{font-family:'JetBrains Mono',monospace;font-size:.9rem;background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:10px 14px;border-radius:8px;outline:none;width:100%;max-width:500px;transition:border-color .2s}
+input:focus{border-color:var(--accent)}
+input.correct{border-color:var(--green);background:rgba(52,211,153,.08)}
+input.wrong{border-color:var(--red);background:rgba(248,113,113,.08)}
+.feedback{font-size:.8rem;font-weight:500;margin-top:4px}
+.feedback.ok{color:var(--green)}.feedback.nope{color:var(--red)}
+.btn{font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:600;padding:10px 24px;border-radius:10px;border:none;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}.btn-primary:hover{opacity:.85;transform:translateY(-1px)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--accent)}
+.btn-row{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.score-bar{background:var(--surface2);border-radius:10px;height:8px;margin-top:16px;overflow:hidden}
+.score-fill{height:100%;border-radius:10px;transition:width .5s ease;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.score-text{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--dim);margin-top:8px;text-align:right}
+.visual{font-family:'JetBrains Mono',monospace;font-size:.85rem;padding:16px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin:12px 0;line-height:2;word-break:break-all}
+.visual .hl{color:var(--accent);font-weight:700}
+.visual .hl2{color:var(--orange);font-weight:700}
+.visual .dim{color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="container">
+<nav>
+  <a href="index.html">← Übersicht</a><span class="nav-sep">/</span><span class="nav-current">04 EUI-64</span>
+</nav>
+<h1>EUI-64 <span>MAC → Interface ID</span></h1>
+<p class="subtitle">Aufgabe 4 der Klausur · 20 Punkte</p>
+
+<!-- Erklärung -->
+<div class="section">
+  <div class="section-title">Theorie</div>
+  <h2>Das EUI-64-Verfahren</h2>
+  <p class="section-desc">So wird eine 48-Bit-MAC-Adresse in eine 64-Bit-Interface-ID umgewandelt:</p>
+  <div class="steps-box">
+    <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Aufteilen</strong> – MAC-Adresse nach dem 3. Oktett in zwei Hälften teilen.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-text"><strong>FF:FE einfügen</strong> – In der Mitte <code>FF:FE</code> einfügen → 8 Oktette (64 Bit).</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-text"><strong>7. Bit flippen</strong> – Das 7. Bit (Universal/Local-Bit) des <strong>ersten Oktetts</strong> invertieren.<br>
+    Bit 7 zählt von links: Bit 8 7 6 5 4 3 2 1. Position 7 hat den Wert 2 (0000 00<strong>x</strong>0).</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Gruppieren</strong> – Die 8 Oktette in IPv6-Hextets schreiben (je 2 Oktette = 1 Hextet).</div></div>
+  </div>
+</div>
+
+<!-- Übung 4.1: Beschreibung -->
+<div class="section">
+  <div class="section-title">Aufgabe 4.1 · Verfahren beschreiben</div>
+  <h2>Schritte in eigenen Worten</h2>
+  <p class="section-desc">Beschreibe das EUI-64-Verfahren. Klicke auf "Lösung zeigen" zum Vergleich.</p>
+  <textarea id="eui-explain" style="font-family:'Outfit',sans-serif;font-size:.9rem;background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:12px 14px;border-radius:8px;outline:none;width:100%;resize:vertical;min-height:120px" placeholder="Schritt 1: ...&#10;Schritt 2: ...&#10;Schritt 3: ...&#10;Schritt 4: ..."></textarea>
+  <button class="btn btn-secondary" onclick="document.getElementById('eui-sol').style.display='block'" style="margin-top:12px;font-size:.8rem;padding:6px 14px">Lösung zeigen</button>
+  <div id="eui-sol" style="display:none;margin-top:12px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15);border-radius:10px;padding:16px;font-size:.85rem;color:var(--green);line-height:1.7">
+    1. MAC-Adresse in zwei Hälften teilen (nach dem 3. Oktett).<br>
+    2. FF:FE in der Mitte einfügen → 64-Bit-Wert.<br>
+    3. Das 7. Bit des ersten Oktetts invertieren (Universal/Local-Bit).<br>
+    4. Ergebnis als 4 Hextets (je 16 Bit) schreiben = Interface-ID.
+  </div>
+</div>
+
+<!-- Übung 4.2: Praktisch -->
+<div class="section">
+  <div class="section-title">Aufgabe 4.2 · Praktische Umwandlung</div>
+  <h2>MAC-Adresse umwandeln</h2>
+  <p class="section-desc">Führe alle Schritte durch und bilde die Link-Local-Adresse.</p>
+
+  <div class="mac-display" id="mac-display"></div>
+
+  <div class="q-group">
+    <div class="q-label">Schritt 1: Aufteilen und <code>FF:FE</code> einfügen (8 Oktette mit Doppelpunkt):</div>
+    <input type="text" id="q-fffe" placeholder="z.B. 00:1A:2B:FF:FE:3C:4D:5E" autocomplete="off" spellcheck="false">
+    <div class="feedback" id="fb-fffe"></div>
+  </div>
+
+  <div class="q-group">
+    <div class="q-label">Schritt 2: Erstes Oktett in Binär:</div>
+    <input type="text" id="q-bin" placeholder="z.B. 00000000" autocomplete="off" spellcheck="false" style="max-width:200px">
+    <div class="feedback" id="fb-bin"></div>
+  </div>
+
+  <div class="q-group">
+    <div class="q-label">Schritt 3: 7. Bit flippen → neues erstes Oktett (hex):</div>
+    <input type="text" id="q-flipped" placeholder="z.B. 02" autocomplete="off" spellcheck="false" style="max-width:120px">
+    <div class="feedback" id="fb-flipped"></div>
+  </div>
+
+  <div class="q-group">
+    <div class="q-label">Schritt 4: Interface-ID (4 Hextets, z.B. <code>021A:2BFF:FE3C:4D5E</code>):</div>
+    <input type="text" id="q-iid" placeholder="z.B. 021A:2BFF:FE3C:4D5E" autocomplete="off" spellcheck="false">
+    <div class="feedback" id="fb-iid"></div>
+  </div>
+
+  <div class="q-group">
+    <div class="q-label">Vollständige Link-Local-Adresse:</div>
+    <input type="text" id="q-ll" placeholder="z.B. fe80::21a:2bff:fe3c:4d5e" autocomplete="off" spellcheck="false">
+    <div class="feedback" id="fb-ll"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkEUI()">Prüfen</button>
+    <button class="btn btn-secondary" onclick="newMAC()">Neue MAC-Adresse</button>
+  </div>
+  <div class="score-bar"><div class="score-fill" id="eui-score-fill" style="width:0%"></div></div>
+  <div class="score-text" id="eui-score-text"></div>
+
+  <div class="visual" id="solution-visual" style="display:none;margin-top:20px"></div>
+</div>
+
+</div>
+<script>
+const macPool = [
+  '00:1A:2B:3C:4D:5E',
+  '08:00:27:AB:CD:EF',
+  '0C:42:A1:7B:3E:90',
+  'AA:BB:CC:DD:EE:FF',
+  '00:0C:29:4A:5B:6C',
+  '02:50:F2:1A:2B:3C',
+  'B4:2E:99:01:23:45',
+  '00:25:96:FF:FE:12',
+  'DC:A6:32:78:9A:BC',
+  '10:DD:B1:C3:D4:E5',
+];
+
+let curMAC, solution;
+
+function parseMAC(mac){return mac.split(':').map(h=>parseInt(h,16))}
+
+function computeEUI64(mac){
+  const bytes=parseMAC(mac);
+  // Insert FF:FE
+  const eui=[bytes[0],bytes[1],bytes[2],0xFF,0xFE,bytes[3],bytes[4],bytes[5]];
+  // Flip bit 7 of first byte
+  eui[0]=eui[0]^0x02;
+  return eui;
+}
+
+function toHex(b){return b.toString(16).padStart(2,'0')}
+function toHexUpper(b){return b.toString(16).padStart(2,'0').toUpperCase()}
+
+function euiToIID(eui){
+  return `${toHex(eui[0])}${toHex(eui[1])}:${toHex(eui[2])}${toHex(eui[3])}:${toHex(eui[4])}${toHex(eui[5])}:${toHex(eui[6])}${toHex(eui[7])}`;
+}
+
+function pickMAC(){
+  curMAC=macPool[Math.floor(Math.random()*macPool.length)];
+  const bytes=parseMAC(curMAC);
+  const eui=computeEUI64(curMAC);
+  solution={
+    fffe:`${toHex(bytes[0])}:${toHex(bytes[1])}:${toHex(bytes[2])}:ff:fe:${toHex(bytes[3])}:${toHex(bytes[4])}:${toHex(bytes[5])}`,
+    bin:bytes[0].toString(2).padStart(8,'0'),
+    flipped:toHex(bytes[0]^0x02),
+    iid:euiToIID(eui),
+    ll:`fe80::${euiToIID(eui)}`,
+  };
+}
+
+function renderMAC(){document.getElementById('mac-display').textContent=curMAC}
+
+function norm(s){return s.trim().toLowerCase().replace(/\s/g,'')}
+
+function checkEUI(){
+  let score=0,total=5;
+  const checks=[
+    {id:'q-fffe',fb:'fb-fffe',expected:solution.fffe,compare:(a,b)=>norm(a)===norm(b)},
+    {id:'q-bin',fb:'fb-bin',expected:solution.bin,compare:(a,b)=>a.replace(/\s/g,'')===b},
+    {id:'q-flipped',fb:'fb-flipped',expected:solution.flipped,compare:(a,b)=>norm(a)===norm(b)},
+    {id:'q-iid',fb:'fb-iid',expected:solution.iid,compare:(a,b)=>norm(a)===norm(b)},
+    {id:'q-ll',fb:'fb-ll',expected:solution.ll,compare:(a,b)=>{
+      // Expand both and compare
+      try{return expandFull(a)===expandFull(b)}catch{return false}
+    }},
+  ];
+  
+  checks.forEach(c=>{
+    const inp=document.getElementById(c.id),fb=document.getElementById(c.fb);
+    if(c.compare(inp.value,c.expected)){inp.className='correct';fb.className='feedback ok';fb.textContent='✓';score++}
+    else{inp.className='wrong';fb.className='feedback nope';fb.textContent='Erwartet: '+c.expected}
+  });
+  
+  const pct=Math.round(score/total*100);
+  document.getElementById('eui-score-fill').style.width=pct+'%';
+  document.getElementById('eui-score-text').textContent=`${score}/${total} richtig (${pct}%)`;
+  
+  // Show visual solution
+  const bytes=parseMAC(curMAC);
+  const vis=document.getElementById('solution-visual');
+  vis.style.display='block';
+  vis.innerHTML=`
+    <span class="dim">MAC:</span> ${curMAC}<br>
+    <span class="dim">Split:</span> ${toHex(bytes[0])}:${toHex(bytes[1])}:${toHex(bytes[2])} | ${toHex(bytes[3])}:${toHex(bytes[4])}:${toHex(bytes[5])}<br>
+    <span class="dim">+FF:FE:</span> ${solution.fffe}<br>
+    <span class="dim">1. Oktett:</span> ${toHex(bytes[0])} = <span class="hl2">${solution.bin}</span><br>
+    <span class="dim">Bit flip:</span> ${solution.bin.slice(0,6)}<span class="hl2">${solution.bin[6]==='0'?'1':'0'}</span>${solution.bin[7]} = <span class="hl">${solution.flipped}</span><br>
+    <span class="dim">IID:</span> <span class="hl">${solution.iid}</span><br>
+    <span class="dim">Link-Local:</span> <span class="hl">${solution.ll}</span>
+  `;
+}
+
+function expandFull(addr){
+  addr=addr.trim().toLowerCase();
+  if(addr.indexOf('::')!==-1){
+    let[l,r]=addr.split('::');let lp=l?l.split(':'):[];let rp=r?r.split(':'):[];
+    let m=8-lp.length-rp.length;let mid=Array(m).fill('0000');
+    return[...lp,...mid,...rp].map(h=>h.padStart(4,'0')).join(':');
+  }
+  return addr.split(':').map(h=>h.padStart(4,'0')).join(':');
+}
+
+function newMAC(){
+  pickMAC();renderMAC();
+  ['q-fffe','q-bin','q-flipped','q-iid','q-ll'].forEach(id=>{const e=document.getElementById(id);e.value='';e.className=''});
+  ['fb-fffe','fb-bin','fb-flipped','fb-iid','fb-ll'].forEach(id=>{const e=document.getElementById(id);e.textContent='';e.className='feedback'});
+  document.getElementById('eui-score-fill').style.width='0%';
+  document.getElementById('eui-score-text').textContent='';
+  document.getElementById('solution-visual').style.display='none';
+}
+
+pickMAC();renderMAC();
+</script>
+</body>
+</html>

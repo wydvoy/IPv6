@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>05 – Begriffsdefinitionen</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#2a3550;--text:#e2e8f0;--dim:#64748b;--accent:#a78bfa;--accent2:#22d3ee;--green:#34d399;--red:#f87171;--orange:#fbbf24}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.noise{position:fixed;top:0;left:0;width:100%;height:100%;opacity:.03;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.container{max-width:800px;margin:0 auto;padding:40px 24px;position:relative;z-index:1}
+nav{display:flex;align-items:center;gap:16px;margin-bottom:48px}
+nav a{color:var(--dim);text-decoration:none;font-size:.9rem;transition:color .2s}nav a:hover{color:var(--accent)}
+.nav-sep{color:var(--border)}.nav-current{color:var(--text);font-weight:500}
+h1{font-size:1.8rem;font-weight:900;margin-bottom:8px}h1 span{color:var(--accent)}
+.subtitle{color:var(--dim);margin-bottom:40px;font-size:.95rem}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px}
+.section-title{font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.section h2{font-size:1.2rem;font-weight:700;margin-bottom:4px}
+.section-desc{color:var(--dim);font-size:.85rem;margin-bottom:24px}
+
+/* Quiz cards */
+.quiz-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px;transition:border-color .3s}
+.quiz-card.correct{border-color:var(--green)}
+.quiz-card.wrong{border-color:var(--red)}
+.quiz-q{font-size:1rem;font-weight:600;margin-bottom:14px;line-height:1.5}
+.quiz-q code{font-family:'JetBrains Mono',monospace;background:rgba(167,139,250,.12);padding:2px 6px;border-radius:4px;font-size:.9rem;color:var(--accent)}
+.options{display:grid;gap:8px}
+.option{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s;font-size:.9rem}
+.option:hover{border-color:var(--accent);background:rgba(167,139,250,.04)}
+.option.selected{border-color:var(--accent);background:rgba(167,139,250,.08)}
+.option.correct-answer{border-color:var(--green);background:rgba(52,211,153,.08)}
+.option.wrong-answer{border-color:var(--red);background:rgba(248,113,113,.08)}
+.option input{accent-color:var(--accent)}
+.quiz-feedback{font-size:.85rem;margin-top:10px;line-height:1.6;display:none}
+.quiz-feedback.visible{display:block}
+.quiz-feedback.ok{color:var(--green)}
+.quiz-feedback.nope{color:var(--red)}
+
+/* Free text */
+textarea{font-family:'Outfit',sans-serif;font-size:.9rem;background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:12px 14px;border-radius:8px;outline:none;width:100%;resize:vertical;min-height:80px;transition:border-color .2s;line-height:1.5}
+textarea:focus{border-color:var(--accent)}
+.solution-box{background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15);border-radius:10px;padding:14px 18px;margin-top:10px;display:none;color:var(--green);font-size:.85rem;line-height:1.7}
+.solution-box.visible{display:block}
+
+.btn{font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:600;padding:10px 24px;border-radius:10px;border:none;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}.btn-primary:hover{opacity:.85;transform:translateY(-1px)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--accent)}
+.btn-sm{font-size:.8rem;padding:6px 14px}
+.btn-row{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.score-bar{background:var(--surface2);border-radius:10px;height:8px;margin-top:16px;overflow:hidden}
+.score-fill{height:100%;border-radius:10px;transition:width .5s ease;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.score-text{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--dim);margin-top:8px;text-align:right}
+.gap-text{display:inline-block;border-bottom:2px dashed var(--accent);min-width:120px;padding:0 4px;color:var(--accent);font-weight:500}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="container">
+<nav>
+  <a href="index.html">← Übersicht</a><span class="nav-sep">/</span><span class="nav-current">05 Begriffe</span>
+</nav>
+<h1>Begriffs<span>definitionen</span></h1>
+<p class="subtitle">Aufgabe 5 der Klausur · 20 Punkte</p>
+
+<!-- Multiple Choice -->
+<div class="section">
+  <div class="section-title">Teil A · Multiple Choice</div>
+  <h2>Wähle die richtige Antwort</h2>
+  <p class="section-desc">Teste dein Wissen zu den IPv6-Übergangstechnologien und Konzepten.</p>
+  <div id="mc-questions"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkMC()">Prüfen</button>
+    <button class="btn btn-secondary" onclick="resetMC()">Zurücksetzen</button>
+  </div>
+  <div class="score-bar"><div class="score-fill" id="mc-score-fill" style="width:0%"></div></div>
+  <div class="score-text" id="mc-score-text"></div>
+</div>
+
+<!-- Free text definitions -->
+<div class="section">
+  <div class="section-title">Teil B · Definitionen</div>
+  <h2>Begriffe in eigenen Worten erklären</h2>
+  <p class="section-desc">Schreibe deine Definitionen und vergleiche mit der Musterlösung.</p>
+  <div id="def-exercises"></div>
+</div>
+
+<!-- Lückentext -->
+<div class="section">
+  <div class="section-title">Teil C · Lückentext</div>
+  <h2>SLAAC-Prozess vervollständigen</h2>
+  <p class="section-desc">Fülle die Lücken im SLAAC-Ablauf aus.</p>
+  <div style="line-height:2.2;font-size:.95rem">
+    <p>Ein IPv6-Host sendet eine <strong>Router Solicitation</strong> Nachricht. Der Router antwortet mit einem 
+    <input type="text" id="gap1" placeholder="???" style="font-family:'JetBrains Mono',monospace;font-size:.85rem;background:var(--surface2);color:var(--accent);border:1px solid var(--border);padding:4px 10px;border-radius:6px;outline:none;width:200px;transition:border-color .2s" autocomplete="off" spellcheck="false">, 
+    der das Netzwerk-<input type="text" id="gap2" placeholder="???" style="font-family:'JetBrains Mono',monospace;font-size:.85rem;background:var(--surface2);color:var(--accent);border:1px solid var(--border);padding:4px 10px;border-radius:6px;outline:none;width:120px;transition:border-color .2s" autocomplete="off" spellcheck="false"> enthält.</p>
+    <p>Der Host generiert seinen 
+    <input type="text" id="gap3" placeholder="???" style="font-family:'JetBrains Mono',monospace;font-size:.85rem;background:var(--surface2);color:var(--accent);border:1px solid var(--border);padding:4px 10px;border-radius:6px;outline:none;width:200px;transition:border-color .2s" autocomplete="off" spellcheck="false">
+    (z.B. per EUI-64 oder Privacy Extensions).</p>
+    <p>Das Präfix vom Router + der selbst generierte Interface Identifier = 
+    <input type="text" id="gap4" placeholder="???" style="font-family:'JetBrains Mono',monospace;font-size:.85rem;background:var(--surface2);color:var(--accent);border:1px solid var(--border);padding:4px 10px;border-radius:6px;outline:none;width:250px;transition:border-color .2s" autocomplete="off" spellcheck="false">.</p>
+    <p>Ein <input type="text" id="gap5" placeholder="???" style="font-family:'JetBrains Mono',monospace;font-size:.85rem;background:var(--surface2);color:var(--accent);border:1px solid var(--border);padding:4px 10px;border-radius:6px;outline:none;width:160px;transition:border-color .2s" autocomplete="off" spellcheck="false">
+    wird bei SLAAC <strong>nicht</strong> benötigt.</p>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkGaps()">Prüfen</button>
+    <button class="btn btn-secondary" onclick="resetGaps()">Zurücksetzen</button>
+  </div>
+  <div class="score-bar"><div class="score-fill" id="gap-score-fill" style="width:0%"></div></div>
+  <div class="score-text" id="gap-score-text"></div>
+</div>
+
+</div>
+<script>
+// MC Questions
+const mcData = [
+  {
+    q:'Was beschreibt <code>Dual Stack</code> am besten?',
+    options:['IPv6-Pakete werden in IPv4-Pakete gekapselt','IPv4 und IPv6 laufen gleichzeitig auf einem System','IPv6-Adressen werden in IPv4-Adressen übersetzt','Mehrere Hosts teilen sich eine IPv6-Adresse'],
+    correct:1,
+    explain:'Dual Stack bedeutet, dass ein System beide Protokolle (IPv4 und IPv6) gleichzeitig betreibt.'
+  },
+  {
+    q:'Welches Verfahren kapselt IPv6-Pakete in IPv4-Pakete ein?',
+    options:['NAT64','Dual Stack','Tunneling','SLAAC'],
+    correct:2,
+    explain:'Beim Tunneling werden IPv6-Pakete in IPv4-Pakete eingepackt, um sie über IPv4-Netze zu transportieren (z.B. 6to4, Teredo, ISATAP).'
+  },
+  {
+    q:'Was ist ein Nachteil von Dual Stack?',
+    options:['Keine IPv4-Kompatibilität','Erhöhter Verwaltungsaufwand durch doppelte Protokolle','Funktioniert nur mit Tunneling','Erfordert NAT64'],
+    correct:1,
+    explain:'Dual Stack erfordert die Verwaltung und Konfiguration beider Protokollstacks – doppelter Aufwand, doppelte Ressourcen.'
+  },
+  {
+    q:'Was macht <code>NAT64</code>?',
+    options:['Übersetzt private IPv4 in öffentliche IPv4','Übersetzt zwischen IPv6 und IPv4','Erstellt Tunnel zwischen IPv6-Netzen','Konfiguriert automatisch IPv6-Adressen'],
+    correct:1,
+    explain:'NAT64 übersetzt zwischen IPv6- und IPv4-Adressen, sodass IPv6-only-Clients auf IPv4-Dienste zugreifen können.'
+  },
+  {
+    q:'Wofür steht SLAAC?',
+    options:['Stateful Address Auto Configuration','Stateless Address Autoconfiguration','Secure Local Address Assignment Control','Standard Link Address Auto Certification'],
+    correct:1,
+    explain:'SLAAC = Stateless Address Autoconfiguration. Der Host konfiguriert seine IPv6-Adresse automatisch ohne DHCP.'
+  },
+  {
+    q:'Was enthält der IPv6-Header NICHT?',
+    options:['Quelladresse','Zieladresse','Prüfsumme (Checksum)','Hop Limit'],
+    correct:2,
+    explain:'Anders als IPv4 hat der IPv6-Header keine Header-Prüfsumme. Die Integritätsprüfung wird den höheren Schichten überlassen (TCP/UDP).'
+  },
+  {
+    q:'Was bedeutet Integrität im Netzwerkkontext?',
+    options:['Daten werden verschlüsselt übertragen','Daten kommen unverändert beim Empfänger an','Daten werden komprimiert','Der Absender wird authentifiziert'],
+    correct:1,
+    explain:'Integrität stellt sicher, dass Daten während der Übertragung nicht verändert wurden.'
+  },
+  {
+    q:'Welches ist ein Beispiel für ein Tunneling-Verfahren?',
+    options:['DHCPv6','SLAAC','6to4','NAT44'],
+    correct:2,
+    explain:'6to4 ist ein Tunneling-Verfahren, das IPv6-Pakete in IPv4 kapselt. Weitere: Teredo, ISATAP.'
+  },
+  {
+    q:'Woher bekommt ein Host bei SLAAC sein Netzwerk-Präfix?',
+    options:['Vom DHCP-Server','Aus der MAC-Adresse','Vom Router (Router Advertisement)','Aus der DNS-Konfiguration'],
+    correct:2,
+    explain:'Der Router sendet Router Advertisements (RA) mit dem Netzwerk-Präfix. Der Host kombiniert dieses mit seiner Interface-ID.'
+  },
+  {
+    q:'Was unterscheidet NAT von NAT64?',
+    options:['NAT ist für IPv6, NAT64 für IPv4','NAT übersetzt IPv4↔IPv4, NAT64 übersetzt IPv6↔IPv4','NAT64 ist schneller als NAT','Es gibt keinen Unterschied'],
+    correct:1,
+    explain:'Klassisches NAT: privat IPv4 → öffentlich IPv4. NAT64: IPv6 ↔ IPv4 Übersetzung.'
+  },
+];
+
+function shuffle(a){let b=[...a];for(let i=b.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+
+let currentMC = [];
+function pickMC(){currentMC=shuffle(mcData).slice(0,6)}
+
+function renderMC(){
+  const c=document.getElementById('mc-questions');c.innerHTML='';
+  currentMC.forEach((q,qi)=>{
+    let html=`<div class="quiz-card" id="mc-card-${qi}">
+      <div class="quiz-q">${qi+1}. ${q.q}</div>
+      <div class="options">`;
+    q.options.forEach((opt,oi)=>{
+      html+=`<label class="option" id="mc-opt-${qi}-${oi}">
+        <input type="radio" name="mc-${qi}" value="${oi}"> ${opt}
+      </label>`;
+    });
+    html+=`</div><div class="quiz-feedback" id="mc-fb-${qi}">${q.explain}</div></div>`;
+    c.innerHTML+=html;
+  });
+}
+
+function checkMC(){
+  let score=0;
+  currentMC.forEach((q,qi)=>{
+    const sel=document.querySelector(`input[name="mc-${qi}"]:checked`);
+    const card=document.getElementById(`mc-card-${qi}`);
+    const fb=document.getElementById(`mc-fb-${qi}`);
+    // Reset option styles
+    q.options.forEach((_,oi)=>{document.getElementById(`mc-opt-${qi}-${oi}`).className='option'});
+    
+    if(sel&&parseInt(sel.value)===q.correct){
+      card.className='quiz-card correct';
+      document.getElementById(`mc-opt-${qi}-${q.correct}`).className='option correct-answer';
+      fb.className='quiz-feedback visible ok';score++;
+    } else {
+      card.className='quiz-card wrong';
+      document.getElementById(`mc-opt-${qi}-${q.correct}`).className='option correct-answer';
+      if(sel)document.getElementById(`mc-opt-${qi}-${sel.value}`).className='option wrong-answer';
+      fb.className='quiz-feedback visible nope';
+    }
+  });
+  const pct=Math.round(score/currentMC.length*100);
+  document.getElementById('mc-score-fill').style.width=pct+'%';
+  document.getElementById('mc-score-text').textContent=`${score}/${currentMC.length} richtig (${pct}%)`;
+}
+
+function resetMC(){
+  pickMC();renderMC();
+  document.getElementById('mc-score-fill').style.width='0%';
+  document.getElementById('mc-score-text').textContent='';
+}
+
+// Definitions
+const defData = [
+  {term:'Dual Stack', solution:'Gleichzeitiger Betrieb von IPv4 und IPv6 auf einem System. Vorteil: Kompatibilität zu beiden Protokollen, sanfte Migration. Nachteil: Erhöhter Verwaltungsaufwand, doppelte Ressourcen.'},
+  {term:'Tunneling', solution:'IPv6-Pakete werden in IPv4-Pakete gekapselt und über IPv4-Infrastruktur transportiert. Beispiele: 6to4, Teredo, ISATAP.'},
+  {term:'Header', solution:'Steuerinformationen am Anfang eines Datenpakets. Enthält u.a. Quell- und Zieladresse, Protokollinformationen, Hop Limit.'},
+  {term:'Integrität', solution:'Sicherstellung, dass Daten während der Übertragung unverändert geblieben sind. Wird z.B. durch Prüfsummen gewährleistet.'},
+  {term:'NAT vs. NAT64', solution:'NAT: Übersetzung privater IPv4-Adressen in öffentliche IPv4-Adressen (Adressknappheit). NAT64: Übersetzung zwischen IPv6- und IPv4-Adressen. Ermöglicht IPv6-only-Clients Zugriff auf IPv4-Dienste.'},
+  {term:'SLAAC', solution:'Stateless Address Autoconfiguration. Host generiert automatisch eine IPv6-Adresse ohne DHCP-Server. Router sendet Präfix per Router Advertisement, Host generiert Interface-ID (z.B. EUI-64). Präfix + Interface-ID = vollständige Adresse.'},
+];
+
+function renderDefs(){
+  const c=document.getElementById('def-exercises');c.innerHTML='';
+  defData.forEach((d,i)=>{
+    c.innerHTML+=`
+      <div style="margin-bottom:24px">
+        <label style="font-weight:700;font-size:1rem;display:block;margin-bottom:8px">${d.term}</label>
+        <textarea id="def-${i}" placeholder="Definiere den Begriff..."></textarea>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('def-sol-${i}').classList.toggle('visible')" style="margin-top:8px">Lösung zeigen</button>
+        <div class="solution-box" id="def-sol-${i}">${d.solution}</div>
+      </div>`;
+  });
+}
+
+// Gap fill
+const gaps = [
+  {id:'gap1', answers:['router advertisement','ra','router-advertisement'], label:'Router Advertisement'},
+  {id:'gap2', answers:['präfix','prefix','netzwerkpräfix','netzwerk-präfix','network prefix'], label:'Präfix'},
+  {id:'gap3', answers:['interface identifier','interface-identifier','interface id','interface-id','iid'], label:'Interface Identifier'},
+  {id:'gap4', answers:['vollständige ipv6-adresse','vollständige ipv6 adresse','vollständige adresse','ipv6-adresse','ipv6 adresse','complete ipv6 address'], label:'vollständige IPv6-Adresse'},
+  {id:'gap5', answers:['dhcp-server','dhcp server','dhcpv6-server','dhcpv6 server','dhcp'], label:'DHCP-Server'},
+];
+
+function checkGaps(){
+  let score=0;
+  gaps.forEach(g=>{
+    const inp=document.getElementById(g.id);
+    const val=inp.value.trim().toLowerCase();
+    if(g.answers.some(a=>val.includes(a)||a.includes(val)&&val.length>2)){
+      inp.style.borderColor='var(--green)';inp.style.background='rgba(52,211,153,.08)';score++;
+    } else {
+      inp.style.borderColor='var(--red)';inp.style.background='rgba(248,113,113,.08)';
+      inp.value=g.label;inp.style.color='var(--red)';
+    }
+  });
+  const pct=Math.round(score/gaps.length*100);
+  document.getElementById('gap-score-fill').style.width=pct+'%';
+  document.getElementById('gap-score-text').textContent=`${score}/${gaps.length} richtig (${pct}%)`;
+}
+
+function resetGaps(){
+  gaps.forEach(g=>{
+    const inp=document.getElementById(g.id);
+    inp.value='';inp.style.borderColor='var(--border)';inp.style.background='var(--surface2)';inp.style.color='var(--accent)';
+  });
+  document.getElementById('gap-score-fill').style.width='0%';
+  document.getElementById('gap-score-text').textContent='';
+}
+
+pickMC();renderMC();renderDefs();
+</script>
+</body>
+</html>

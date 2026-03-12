@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>02 – Komprimierung & Expandierung</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#2a3550;--text:#e2e8f0;--dim:#64748b;--accent:#22d3ee;--accent2:#a78bfa;--green:#34d399;--red:#f87171;--orange:#fbbf24}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.noise{position:fixed;top:0;left:0;width:100%;height:100%;opacity:.03;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.container{max-width:800px;margin:0 auto;padding:40px 24px;position:relative;z-index:1}
+nav{display:flex;align-items:center;gap:16px;margin-bottom:48px}
+nav a{color:var(--dim);text-decoration:none;font-size:.9rem;transition:color .2s}nav a:hover{color:var(--accent)}
+.nav-sep{color:var(--border)}.nav-current{color:var(--text);font-weight:500}
+h1{font-size:1.8rem;font-weight:900;margin-bottom:8px}
+h1 span{color:var(--accent2)}
+.subtitle{color:var(--dim);margin-bottom:40px;font-size:.95rem}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px}
+.section-title{font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent2);margin-bottom:16px}
+.section h2{font-size:1.2rem;font-weight:700;margin-bottom:4px}
+.section-desc{color:var(--dim);font-size:.85rem;margin-bottom:24px}
+.rules-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:32px;line-height:1.7;font-size:.9rem}
+.rules-box strong{color:var(--accent2)}
+.rules-box code{font-family:'JetBrains Mono',monospace;background:rgba(167,139,250,.1);padding:2px 6px;border-radius:4px;font-size:.85rem;color:var(--accent2)}
+.exercise-item{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.exercise-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.exercise-label{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--dim);margin-bottom:6px}
+.exercise-addr{font-family:'JetBrains Mono',monospace;font-size:1rem;color:var(--accent);margin-bottom:10px;word-break:break-all}
+.input-row{display:flex;gap:12px;align-items:center}
+input[type="text"]{font-family:'JetBrains Mono',monospace;font-size:.9rem;background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:10px 14px;border-radius:8px;outline:none;flex:1;transition:border-color .2s}
+input[type="text"]:focus{border-color:var(--accent2)}
+input.correct{border-color:var(--green);background:rgba(52,211,153,.08)}
+input.wrong{border-color:var(--red);background:rgba(248,113,113,.08)}
+.feedback{font-size:.8rem;font-weight:500;min-width:20px}
+.feedback.ok{color:var(--green)}.feedback.nope{color:var(--red)}
+.btn{font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:600;padding:10px 24px;border-radius:10px;border:none;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--accent2);color:var(--bg)}.btn-primary:hover{opacity:.85;transform:translateY(-1px)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--accent2)}
+.btn-row{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.score-bar{background:var(--surface2);border-radius:10px;height:8px;margin-top:16px;overflow:hidden}
+.score-fill{height:100%;border-radius:10px;transition:width .5s ease;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+.score-text{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--dim);margin-top:8px;text-align:right}
+.hint{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--orange);margin-top:6px;display:none}
+.hint.visible{display:block}
+.total-score{background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(167,139,250,.08));border:1px solid var(--border);border-radius:16px;padding:24px 32px;text-align:center;margin-top:32px}
+.total-score .big{font-size:2rem;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.total-score .label{color:var(--dim);font-size:.85rem;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="container">
+<nav>
+  <a href="index.html">← Übersicht</a><span class="nav-sep">/</span><span class="nav-current">02 Komprimierung</span>
+</nav>
+<h1>Komprimierung <span>& Expandierung</span></h1>
+<p class="subtitle">Aufgabe 3 der Klausur · 15 Punkte</p>
+
+<div class="rules-box">
+  <strong>Regeln zur Komprimierung:</strong><br>
+  1. <strong>Führende Nullen</strong> pro Hextet entfernen: <code>0042</code> → <code>42</code>, <code>0000</code> → <code>0</code><br>
+  2. <strong>Längste Null-Folge</strong> durch <code>::</code> ersetzen – nur <strong>einmal</strong> pro Adresse!<br>
+  Bei gleich langen Folgen: die <strong>erste</strong> Folge wird ersetzt.<br><br>
+  <strong>Expandierung:</strong> <code>::</code> mit Null-Hextets auffüllen bis <strong>8 Hextets à 4 Hex-Ziffern</strong> (32 Zeichen gesamt).
+</div>
+
+<!-- Komprimieren -->
+<div class="section">
+  <div class="section-title">Aufgabe 3.1</div>
+  <h2>Adressen komprimieren</h2>
+  <p class="section-desc">Kürze die Adressen maximal ab.</p>
+  <div id="compress-exercises"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkCompress()">Prüfen</button>
+    <button class="btn btn-secondary" onclick="resetSection('compress')">Zurücksetzen</button>
+    <button class="btn btn-secondary" onclick="newCompress()">Neue Aufgaben</button>
+  </div>
+  <div class="score-bar"><div class="score-fill" id="compress-score-fill" style="width:0%"></div></div>
+  <div class="score-text" id="compress-score-text"></div>
+</div>
+
+<!-- Expandieren -->
+<div class="section">
+  <div class="section-title">Aufgabe 3.2</div>
+  <h2>Adressen expandieren</h2>
+  <p class="section-desc">Schreibe die Adressen vollständig aus (alle 32 Hex-Ziffern, 8 Hextets).</p>
+  <div id="expand-exercises"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkExpand()">Prüfen</button>
+    <button class="btn btn-secondary" onclick="resetSection('expand')">Zurücksetzen</button>
+    <button class="btn btn-secondary" onclick="newExpand()">Neue Aufgaben</button>
+  </div>
+  <div class="score-bar"><div class="score-fill" id="expand-score-fill" style="width:0%"></div></div>
+  <div class="score-text" id="expand-score-text"></div>
+</div>
+
+<div class="total-score" id="total-score" style="display:none">
+  <div class="big" id="total-big"></div>
+  <div class="label">Gesamtergebnis</div>
+</div>
+</div>
+
+<script>
+// Full addresses and their compressed forms
+const compressPool = [
+  {full:'2001:0db8:0000:0000:0000:0000:0000:0001', short:'2001:db8::1'},
+  {full:'fe80:0000:0000:0000:0204:61ff:fe9d:f156', short:'fe80::204:61ff:fe9d:f156'},
+  {full:'ff02:0000:0000:0000:0000:0000:0000:0001', short:'ff02::1'},
+  {full:'2001:0db8:0000:0000:0000:ff00:0042:8329', short:'2001:db8::ff00:42:8329'},
+  {full:'fe80:0000:0000:0000:0000:0000:0000:0001', short:'fe80::1'},
+  {full:'2001:0db8:aaaa:0001:0000:0000:0000:0200', short:'2001:db8:aaaa:1::200'},
+  {full:'ff02:0000:0000:0000:0000:0000:0000:0002', short:'ff02::2'},
+  {full:'2001:0db8:0000:0000:0000:0000:0000:0000', short:'2001:db8::'},
+  {full:'fd00:0000:0000:0000:0000:0000:0000:0001', short:'fd00::1'},
+  {full:'2001:0db8:0085:0000:0000:0000:0000:1000', short:'2001:db8:85::1000'},
+  {full:'ff01:0000:0000:0000:0000:0000:0000:0002', short:'ff01::2'},
+  {full:'2001:0db8:0000:0001:0000:0000:0000:0001', short:'2001:db8:0:1::1'},
+  {full:'fe80:0000:0000:0000:021a:2bff:fe3c:4d5e', short:'fe80::21a:2bff:fe3c:4d5e'},
+  {full:'2001:0db8:abcd:0012:0000:0000:0000:0001', short:'2001:db8:abcd:12::1'},
+  {full:'0000:0000:0000:0000:0000:0000:0000:0001', short:'::1'},
+  {full:'0000:0000:0000:0000:0000:0000:0000:0000', short:'::'},
+  {full:'2001:0db8:0000:0000:0008:0800:200c:417a', short:'2001:db8::8:800:200c:417a'},
+  {full:'ff02:0000:0000:0000:0000:0001:ff00:0001', short:'ff02::1:ff00:1'},
+];
+
+const expandPool = [
+  {short:'2001:db8::1', full:'2001:0db8:0000:0000:0000:0000:0000:0001'},
+  {short:'::1', full:'0000:0000:0000:0000:0000:0000:0000:0001'},
+  {short:'::', full:'0000:0000:0000:0000:0000:0000:0000:0000'},
+  {short:'fe80::1', full:'fe80:0000:0000:0000:0000:0000:0000:0001'},
+  {short:'ff02::2', full:'ff02:0000:0000:0000:0000:0000:0000:0002'},
+  {short:'2001:db8:85a3::8a2e:370:7334', full:'2001:0db8:85a3:0000:0000:8a2e:0370:7334'},
+  {short:'2001:db8::ff00:42:8329', full:'2001:0db8:0000:0000:0000:ff00:0042:8329'},
+  {short:'fe80::21a:2bff:fe3c:4d5e', full:'fe80:0000:0000:0000:021a:2bff:fe3c:4d5e'},
+  {short:'fd00::1', full:'fd00:0000:0000:0000:0000:0000:0000:0001'},
+  {short:'2001:db8:abcd:12::1', full:'2001:0db8:abcd:0012:0000:0000:0000:0001'},
+  {short:'2001:db8:0:1::1', full:'2001:0db8:0000:0001:0000:0000:0000:0001'},
+  {short:'ff02::1:ff00:1', full:'ff02:0000:0000:0000:0000:0001:ff00:0001'},
+];
+
+function shuffle(a){let b=[...a];for(let i=b.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+
+let currentCompress = [];
+let currentExpand = [];
+
+function pickCompress(){currentCompress=shuffle(compressPool).slice(0,5)}
+function pickExpand(){currentExpand=shuffle(expandPool).slice(0,4)}
+
+function renderCompress(){
+  const c=document.getElementById('compress-exercises');c.innerHTML='';
+  currentCompress.forEach((item,i)=>{
+    c.innerHTML+=`
+      <div class="exercise-item">
+        <div class="exercise-label">Aufgabe ${i+1}</div>
+        <div class="exercise-addr">${item.full}</div>
+        <div class="input-row">
+          <input type="text" id="comp-${i}" placeholder="Komprimierte Adresse" autocomplete="off" spellcheck="false">
+          <span class="feedback" id="comp-fb-${i}"></span>
+        </div>
+        <div class="hint" id="comp-hint-${i}">Lösung: ${item.short}</div>
+      </div>`;
+  });
+}
+
+function renderExpand(){
+  const c=document.getElementById('expand-exercises');c.innerHTML='';
+  currentExpand.forEach((item,i)=>{
+    c.innerHTML+=`
+      <div class="exercise-item">
+        <div class="exercise-label">Aufgabe ${i+1}</div>
+        <div class="exercise-addr">${item.short}</div>
+        <div class="input-row">
+          <input type="text" id="exp-${i}" placeholder="Vollständige Adresse (8 Hextets)" autocomplete="off" spellcheck="false">
+          <span class="feedback" id="exp-fb-${i}"></span>
+        </div>
+        <div class="hint" id="exp-hint-${i}">Lösung: ${item.full}</div>
+      </div>`;
+  });
+}
+
+// Normalize for comparison
+function normalizeCompressed(s){
+  s=s.trim().toLowerCase().replace(/\s/g,'');
+  // Remove trailing : if not ::
+  return s;
+}
+
+function normalizeExpanded(s){
+  s=s.trim().toLowerCase().replace(/\s/g,'');
+  // Ensure each hextet is 4 chars
+  let parts=s.split(':');
+  if(parts.length!==8) return s;
+  return parts.map(p=>p.padStart(4,'0')).join(':');
+}
+
+// Compress validation: expand both and compare
+function expandFull(addr){
+  addr=addr.trim().toLowerCase();
+  if(addr.indexOf('::')!==-1){
+    let [left,right]=addr.split('::');
+    let lp=left?left.split(':'):[];
+    let rp=right?right.split(':'):[];
+    let missing=8-lp.length-rp.length;
+    let mid=Array(missing).fill('0000');
+    let all=[...lp,...mid,...rp];
+    return all.map(h=>h.padStart(4,'0')).join(':');
+  }
+  return addr.split(':').map(h=>h.padStart(4,'0')).join(':');
+}
+
+function compressAddr(full){
+  let hextets=full.split(':').map(h=>h.replace(/^0+/,'') || '0');
+  // Find longest run of '0'
+  let bestStart=-1,bestLen=0,curStart=-1,curLen=0;
+  for(let i=0;i<8;i++){
+    if(hextets[i]==='0'){
+      if(curStart===-1)curStart=i;
+      curLen=i-curStart+1;
+      if(curLen>bestLen){bestLen=curLen;bestStart=curStart}
+    } else {curStart=-1;curLen=0}
+  }
+  if(bestLen>=1){
+    let left=hextets.slice(0,bestStart).join(':');
+    let right=hextets.slice(bestStart+bestLen).join(':');
+    return left+'::'+right;
+  }
+  return hextets.join(':');
+}
+
+function isEquivalent(a,b){
+  try{return expandFull(a)===expandFull(b)}catch{return false}
+}
+
+function isMaximallyCompressed(input, fullAddr){
+  let canonical=compressAddr(expandFull(fullAddr));
+  return normalizeCompressed(input)===normalizeCompressed(canonical);
+}
+
+let compScore=0, expScore=0;
+
+function checkCompress(){
+  compScore=0;
+  currentCompress.forEach((item,i)=>{
+    const inp=document.getElementById(`comp-${i}`);
+    const fb=document.getElementById(`comp-fb-${i}`);
+    const hint=document.getElementById(`comp-hint-${i}`);
+    const val=inp.value.trim().toLowerCase();
+    if(!val){inp.className='wrong';fb.className='feedback nope';fb.textContent='?';return}
+    const expanded=expandFull(val);
+    const expectedExpanded=expandFull(item.short);
+    if(expanded===expectedExpanded){
+      // Check if maximally compressed
+      if(isMaximallyCompressed(val,item.full)){
+        inp.className='correct';fb.className='feedback ok';fb.textContent='✓';compScore++;
+      } else {
+        inp.className='wrong';fb.className='feedback nope';fb.textContent='Richtig, aber nicht maximal gekürzt!';
+        hint.classList.add('visible');
+      }
+    } else {
+      inp.className='wrong';fb.className='feedback nope';fb.textContent='✗';
+      hint.classList.add('visible');
+    }
+  });
+  updateCompScore();
+  updateTotal();
+}
+
+function checkExpand(){
+  expScore=0;
+  currentExpand.forEach((item,i)=>{
+    const inp=document.getElementById(`exp-${i}`);
+    const fb=document.getElementById(`exp-fb-${i}`);
+    const hint=document.getElementById(`exp-hint-${i}`);
+    const val=normalizeExpanded(inp.value);
+    const expected=item.full.toLowerCase();
+    if(!inp.value.trim()){inp.className='wrong';fb.className='feedback nope';fb.textContent='?';return}
+    if(val===expected){
+      inp.className='correct';fb.className='feedback ok';fb.textContent='✓';expScore++;
+    } else if(isEquivalent(inp.value,item.full)){
+      inp.className='wrong';fb.className='feedback nope';fb.textContent='Nicht vollständig expandiert!';
+      hint.classList.add('visible');
+    } else {
+      inp.className='wrong';fb.className='feedback nope';fb.textContent='✗';
+      hint.classList.add('visible');
+    }
+  });
+  updateExpScore();
+  updateTotal();
+}
+
+function updateCompScore(){
+  const pct=Math.round(compScore/currentCompress.length*100);
+  document.getElementById('compress-score-fill').style.width=pct+'%';
+  document.getElementById('compress-score-text').textContent=`${compScore}/${currentCompress.length} richtig (${pct}%)`;
+}
+function updateExpScore(){
+  const pct=Math.round(expScore/currentExpand.length*100);
+  document.getElementById('expand-score-fill').style.width=pct+'%';
+  document.getElementById('expand-score-text').textContent=`${expScore}/${currentExpand.length} richtig (${pct}%)`;
+}
+function updateTotal(){
+  const total=compScore+expScore;
+  const max=currentCompress.length+currentExpand.length;
+  const el=document.getElementById('total-score');
+  el.style.display='block';
+  document.getElementById('total-big').textContent=`${total} / ${max}`;
+}
+
+function resetSection(type){
+  const items = type==='compress'?currentCompress:currentExpand;
+  const prefix = type==='compress'?'comp':'exp';
+  items.forEach((_,i)=>{
+    const inp=document.getElementById(`${prefix}-${i}`);if(inp){inp.value='';inp.className=''}
+    const fb=document.getElementById(`${prefix}-fb-${i}`);if(fb){fb.textContent='';fb.className='feedback'}
+    const hint=document.getElementById(`${prefix}-hint-${i}`);if(hint)hint.classList.remove('visible');
+  });
+  document.getElementById(`${type}-score-fill`).style.width='0%';
+  document.getElementById(`${type}-score-text`).textContent='';
+  if(type==='compress')compScore=0;else expScore=0;
+  document.getElementById('total-score').style.display='none';
+}
+
+function newCompress(){pickCompress();renderCompress();compScore=0;document.getElementById('compress-score-fill').style.width='0%';document.getElementById('compress-score-text').textContent='';document.getElementById('total-score').style.display='none'}
+function newExpand(){pickExpand();renderExpand();expScore=0;document.getElementById('expand-score-fill').style.width='0%';document.getElementById('expand-score-text').textContent='';document.getElementById('total-score').style.display='none'}
+
+pickCompress();pickExpand();renderCompress();renderExpand();
+</script>
+</body>
+</html>

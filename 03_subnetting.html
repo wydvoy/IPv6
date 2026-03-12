@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>03 – Netzwerkpräfix & Subnetting</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#2a3550;--text:#e2e8f0;--dim:#64748b;--accent:#22d3ee;--accent2:#a78bfa;--green:#34d399;--red:#f87171;--orange:#fbbf24}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.noise{position:fixed;top:0;left:0;width:100%;height:100%;opacity:.03;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.container{max-width:800px;margin:0 auto;padding:40px 24px;position:relative;z-index:1}
+nav{display:flex;align-items:center;gap:16px;margin-bottom:48px}
+nav a{color:var(--dim);text-decoration:none;font-size:.9rem;transition:color .2s}nav a:hover{color:var(--accent)}
+.nav-sep{color:var(--border)}.nav-current{color:var(--text);font-weight:500}
+h1{font-size:1.8rem;font-weight:900;margin-bottom:8px}h1 span{color:var(--accent)}
+.subtitle{color:var(--dim);margin-bottom:40px;font-size:.95rem}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px}
+.section-title{font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.section h2{font-size:1.2rem;font-weight:700;margin-bottom:4px}
+.section-desc{color:var(--dim);font-size:.85rem;margin-bottom:24px}
+.addr-display{font-family:'JetBrains Mono',monospace;font-size:1.1rem;padding:16px 20px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;text-align:center;letter-spacing:.05em;word-break:break-all}
+.addr-display .prefix{color:var(--accent);text-decoration:underline;text-decoration-color:rgba(34,211,238,.3);text-underline-offset:4px}
+.addr-display .iid{color:var(--accent2);text-decoration:underline;text-decoration-color:rgba(167,139,250,.3);text-underline-offset:4px}
+.q-group{margin-bottom:20px}
+.q-label{font-size:.95rem;font-weight:500;margin-bottom:8px}
+.q-label code{font-family:'JetBrains Mono',monospace;background:rgba(34,211,238,.1);padding:2px 6px;border-radius:4px;font-size:.85rem;color:var(--accent)}
+input[type="text"],input[type="number"]{font-family:'JetBrains Mono',monospace;font-size:.9rem;background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:10px 14px;border-radius:8px;outline:none;width:100%;max-width:500px;transition:border-color .2s}
+input:focus{border-color:var(--accent)}
+input.correct{border-color:var(--green);background:rgba(52,211,153,.08)}
+input.wrong{border-color:var(--red);background:rgba(248,113,113,.08)}
+.feedback{font-size:.8rem;font-weight:500;margin-top:4px}
+.feedback.ok{color:var(--green)}.feedback.nope{color:var(--red)}
+.btn{font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:600;padding:10px 24px;border-radius:10px;border:none;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}.btn-primary:hover{opacity:.85;transform:translateY(-1px)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--accent)}
+.btn-row{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.score-bar{background:var(--surface2);border-radius:10px;height:8px;margin-top:16px;overflow:hidden}
+.score-fill{height:100%;border-radius:10px;transition:width .5s ease;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.score-text{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--dim);margin-top:8px;text-align:right}
+.info-box{background:rgba(34,211,238,.06);border:1px solid rgba(34,211,238,.15);border-radius:10px;padding:14px 18px;margin-bottom:24px;font-size:.85rem;line-height:1.6;color:var(--accent)}
+.legend{display:flex;gap:20px;justify-content:center;margin-bottom:16px;font-size:.85rem}
+.legend span{display:flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot-prefix{background:var(--accent)}.dot-iid{background:var(--accent2)}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="container">
+<nav>
+  <a href="index.html">← Übersicht</a><span class="nav-sep">/</span><span class="nav-current">03 Subnetting</span>
+</nav>
+<h1>Netzwerkpräfix <span>& Subnetting</span></h1>
+<p class="subtitle">Aufgabe 2 der Klausur · 20 Punkte</p>
+
+<!-- 2.1 Adressstruktur -->
+<div class="section">
+  <div class="section-title">Aufgabe 2.1 · Adressstruktur</div>
+  <h2>Präfix und Interface Identifier erkennen</h2>
+  <p class="section-desc">Identifiziere die Teile der IPv6-Adresse.</p>
+  
+  <div class="legend">
+    <span><span class="dot dot-prefix"></span> Netzwerkpräfix</span>
+    <span><span class="dot dot-iid"></span> Interface ID</span>
+  </div>
+  
+  <div class="addr-display" id="struct-addr"></div>
+  
+  <div class="q-group">
+    <div class="q-label">a) Netzwerkpräfix (die ersten Hextets bis zur Präfixlänge):</div>
+    <input type="text" id="q-prefix" placeholder="z.B. 2001:0db8:abcd:0012" autocomplete="off" spellcheck="false">
+    <div class="feedback" id="fb-prefix"></div>
+  </div>
+  <div class="q-group">
+    <div class="q-label">b) Interface Identifier (der Rest):</div>
+    <input type="text" id="q-iid" placeholder="z.B. 0000:0000:0000:0001" autocomplete="off" spellcheck="false">
+    <div class="feedback" id="fb-iid"></div>
+  </div>
+  <div class="q-group">
+    <div class="q-label">c) Wie viele Bits hat das Netzwerkpräfix?</div>
+    <input type="number" id="q-bits" placeholder="z.B. 64" autocomplete="off" style="max-width:120px">
+    <div class="feedback" id="fb-bits"></div>
+  </div>
+  <div class="q-group">
+    <div class="q-label">d) Wie viele Hosts können theoretisch adressiert werden? (Schreibe als Potenz, z.B. <code>2^64</code>)</div>
+    <input type="text" id="q-hosts" placeholder="z.B. 2^64" autocomplete="off" style="max-width:200px">
+    <div class="feedback" id="fb-hosts"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkStruct()">Prüfen</button>
+    <button class="btn btn-secondary" onclick="newStruct()">Neue Adresse</button>
+  </div>
+  <div class="score-bar"><div class="score-fill" id="struct-score-fill" style="width:0%"></div></div>
+  <div class="score-text" id="struct-score-text"></div>
+</div>
+
+<!-- 2.2 Subnetting -->
+<div class="section">
+  <div class="section-title">Aufgabe 2.2 · Adressräume</div>
+  <h2>Subnetze berechnen</h2>
+  <p class="section-desc" id="subnet-question"></p>
+  
+  <div class="info-box">
+    Formel: Anzahl Subnetze = 2<sup>(Zielpräfix − Ausgangspräfix)</sup>
+  </div>
+  
+  <div class="q-group">
+    <div class="q-label">a) Wie viele Bits stehen für Subnetze zur Verfügung?</div>
+    <input type="number" id="q-subbits" placeholder="z.B. 16" autocomplete="off" style="max-width:120px">
+    <div class="feedback" id="fb-subbits"></div>
+  </div>
+  <div class="q-group">
+    <div class="q-label">b) Wie viele /64-Subnetze ergeben sich?</div>
+    <input type="text" id="q-subnets" placeholder="z.B. 65536" autocomplete="off" style="max-width:200px">
+    <div class="feedback" id="fb-subnets"></div>
+  </div>
+  <div class="q-group">
+    <div class="q-label">c) Erstes Subnetz (<code>/64</code>):</div>
+    <input type="text" id="q-sub1" placeholder="z.B. 2001:db8:cafe:0000::/64" autocomplete="off" spellcheck="false">
+    <div class="feedback" id="fb-sub1"></div>
+  </div>
+  <div class="q-group">
+    <div class="q-label">d) Zweites Subnetz (<code>/64</code>):</div>
+    <input type="text" id="q-sub2" placeholder="z.B. 2001:db8:cafe:0001::/64" autocomplete="off" spellcheck="false">
+    <div class="feedback" id="fb-sub2"></div>
+  </div>
+  <div class="q-group">
+    <div class="q-label">e) Drittes Subnetz (<code>/64</code>):</div>
+    <input type="text" id="q-sub3" placeholder="z.B. 2001:db8:cafe:0002::/64" autocomplete="off" spellcheck="false">
+    <div class="feedback" id="fb-sub3"></div>
+  </div>
+  <div class="q-group">
+    <div class="q-label">f) Warum wird /64 für Endnutzer-Subnetze verwendet? (2 Gründe)</div>
+    <textarea id="q-why64" style="font-family:'Outfit',sans-serif;font-size:.9rem;background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:12px 14px;border-radius:8px;outline:none;width:100%;resize:vertical;min-height:70px" placeholder="Grund 1: ...&#10;Grund 2: ..."></textarea>
+    <div class="feedback" id="fb-why64"></div>
+    <button class="btn btn-secondary" onclick="document.getElementById('sol-why64').style.display='block'" style="margin-top:8px;font-size:.8rem;padding:6px 14px">Lösung zeigen</button>
+    <div id="sol-why64" style="display:none;margin-top:8px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15);border-radius:8px;padding:12px;font-size:.85rem;color:var(--green)">
+      1. SLAAC verwendet die letzten 64 Bits für die Interface-ID (EUI-64 oder Privacy Extensions).<br>
+      2. Standardisierung erleichtert die Netzwerkplanung und -verwaltung.
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkSubnet()">Prüfen</button>
+    <button class="btn btn-secondary" onclick="newSubnet()">Neue Aufgabe</button>
+  </div>
+  <div class="score-bar"><div class="score-fill" id="subnet-score-fill" style="width:0%"></div></div>
+  <div class="score-text" id="subnet-score-text"></div>
+</div>
+
+</div>
+<script>
+// Structure exercises
+const structPool = [
+  {addr:'2001:0db8:abcd:0012:0000:0000:0000:0001', pl:64, prefix:'2001:0db8:abcd:0012', iid:'0000:0000:0000:0001'},
+  {addr:'2001:0db8:1234:5678:9abc:def0:1234:5678', pl:64, prefix:'2001:0db8:1234:5678', iid:'9abc:def0:1234:5678'},
+  {addr:'fe80:0000:0000:0000:021a:2bff:fe3c:4d5e', pl:64, prefix:'fe80:0000:0000:0000', iid:'021a:2bff:fe3c:4d5e'},
+  {addr:'2001:0db8:cafe:0001:0000:0000:0000:0100', pl:64, prefix:'2001:0db8:cafe:0001', iid:'0000:0000:0000:0100'},
+  {addr:'fd00:0000:0000:0001:abcd:ef01:2345:6789', pl:64, prefix:'fd00:0000:0000:0001', iid:'abcd:ef01:2345:6789'},
+];
+
+let curStruct;
+function pickStruct(){curStruct=structPool[Math.floor(Math.random()*structPool.length)]}
+
+function renderStruct(){
+  const el=document.getElementById('struct-addr');
+  const h=curStruct.addr.split(':');
+  const pHex=curStruct.pl/4;
+  const pHextets=Math.ceil(curStruct.pl/16);
+  el.innerHTML=`<span class="prefix">${h.slice(0,pHextets).join(':')}</span>:<span class="iid">${h.slice(pHextets).join(':')}</span> <span style="color:var(--dim)">/${curStruct.pl}</span>`;
+}
+
+function norm(s){return s.trim().toLowerCase().replace(/\s/g,'')}
+function normHex(s){return norm(s).split(':').map(h=>h.padStart(4,'0')).join(':')}
+
+function checkStruct(){
+  let score=0,total=4;
+  // prefix
+  let inp=document.getElementById('q-prefix'),fb=document.getElementById('fb-prefix');
+  if(normHex(inp.value)===curStruct.prefix){inp.className='correct';fb.className='feedback ok';fb.textContent='✓';score++}
+  else{inp.className='wrong';fb.className='feedback nope';fb.textContent='Erwartet: '+curStruct.prefix}
+  // iid
+  inp=document.getElementById('q-iid');fb=document.getElementById('fb-iid');
+  if(normHex(inp.value)===curStruct.iid){inp.className='correct';fb.className='feedback ok';fb.textContent='✓';score++}
+  else{inp.className='wrong';fb.className='feedback nope';fb.textContent='Erwartet: '+curStruct.iid}
+  // bits
+  inp=document.getElementById('q-bits');fb=document.getElementById('fb-bits');
+  if(parseInt(inp.value)===curStruct.pl){inp.className='correct';fb.className='feedback ok';fb.textContent='✓';score++}
+  else{inp.className='wrong';fb.className='feedback nope';fb.textContent='Erwartet: '+curStruct.pl}
+  // hosts
+  inp=document.getElementById('q-hosts');fb=document.getElementById('fb-hosts');
+  const hostBits=128-curStruct.pl;
+  const val=norm(inp.value).replace(/\s/g,'');
+  const ok=val===`2^${hostBits}`||val===`2**${hostBits}`||val===Math.pow(2,hostBits).toString()||val===`2^{${hostBits}}`;
+  if(ok){inp.className='correct';fb.className='feedback ok';fb.textContent='✓';score++}
+  else{inp.className='wrong';fb.className='feedback nope';fb.textContent=`Erwartet: 2^${hostBits}`}
+  
+  const pct=Math.round(score/total*100);
+  document.getElementById('struct-score-fill').style.width=pct+'%';
+  document.getElementById('struct-score-text').textContent=`${score}/${total} richtig (${pct}%)`;
+}
+
+function newStruct(){
+  pickStruct();renderStruct();
+  ['q-prefix','q-iid','q-bits','q-hosts'].forEach(id=>{const e=document.getElementById(id);e.value='';e.className=''});
+  ['fb-prefix','fb-iid','fb-bits','fb-hosts'].forEach(id=>{const e=document.getElementById(id);e.textContent='';e.className='feedback'});
+  document.getElementById('struct-score-fill').style.width='0%';document.getElementById('struct-score-text').textContent='';
+}
+
+// Subnet exercises
+const subnetPool = [
+  {prefix:'2001:db8:cafe::/48', pl:48, base:'2001:db8:cafe'},
+  {prefix:'2001:db8:abcd::/48', pl:48, base:'2001:db8:abcd'},
+  {prefix:'2001:db8:1234::/48', pl:48, base:'2001:db8:1234'},
+  {prefix:'2001:db8:ff00::/48', pl:48, base:'2001:db8:ff00'},
+  {prefix:'2001:db8:a000::/44', pl:44, base:'2001:db8:a00'},
+  {prefix:'2001:db8:b000::/36', pl:36, base:'2001:db8:b0'},
+];
+
+let curSubnet;
+function pickSubnet(){curSubnet=subnetPool[Math.floor(Math.random()*subnetPool.length)]}
+
+function renderSubnet(){
+  document.getElementById('subnet-question').textContent=`Ein Unternehmen erhält den Adressbereich ${curSubnet.prefix} zugeteilt. Berechne die /64-Subnetze.`;
+}
+
+function expandSubnetAddr(s){
+  s=s.trim().toLowerCase().replace(/\/64$/,'').replace(/\s/g,'');
+  if(s.endsWith('::'))s=s+'0';
+  if(s.indexOf('::')!==-1){
+    let[l,r]=s.split('::');let lp=l?l.split(':'):[];let rp=r?r.split(':'):[];
+    let m=8-lp.length-rp.length;let mid=Array(m).fill('0000');
+    return[...lp,...mid,...rp].map(h=>h.padStart(4,'0')).join(':');
+  }
+  return s.split(':').map(h=>h.padStart(4,'0')).join(':');
+}
+
+function makeSubnet(base,pl,idx){
+  // Generate the idx-th /64 subnet
+  let fullBase=expandSubnetAddr(base+'::');
+  let hextets=fullBase.split(':');
+  // The subnet bits are between pl and 64
+  // For /48: hextet index 3 is the subnet ID
+  let subHextetStart=Math.floor(pl/16);
+  let subBitOffset=pl%16;
+  // For simplicity with common cases (/48, /44, /36)
+  if(pl===48){hextets[3]=idx.toString(16).padStart(4,'0')}
+  else if(pl===44){
+    let combined=parseInt(hextets[2],16);
+    let mask=0xfff0;
+    hextets[2]=((combined&mask)|((idx>>4)&0xf)).toString(16).padStart(4,'0');
+    hextets[3]=(((idx&0xf)<<12)).toString(16).padStart(4,'0');
+  }
+  else if(pl===36){
+    let combined=parseInt(hextets[2],16);
+    let mask=0xfff0;
+    // bits 36-63 = 28 bits for subnets
+    let highNibble=(idx>>16)&0xf;
+    hextets[2]=((combined&0xf000)|((idx>>12)&0xfff)).toString(16).padStart(4,'0');
+    hextets[3]=((idx&0xfff)<<4).toString(16).padStart(4,'0');
+  }
+  return hextets.join(':')+'/64';
+}
+
+function checkSubnet(){
+  let score=0,total=5;
+  const subBits=64-curSubnet.pl;
+  const numSubnets=Math.pow(2,subBits);
+  
+  // bits
+  let inp=document.getElementById('q-subbits'),fb=document.getElementById('fb-subbits');
+  if(parseInt(inp.value)===subBits){inp.className='correct';fb.className='feedback ok';fb.textContent='✓';score++}
+  else{inp.className='wrong';fb.className='feedback nope';fb.textContent=`Erwartet: 64 - ${curSubnet.pl} = ${subBits}`}
+  
+  // num subnets
+  inp=document.getElementById('q-subnets');fb=document.getElementById('fb-subnets');
+  let v=norm(inp.value);
+  if(v===numSubnets.toString()||v===`2^${subBits}`||v===`2**${subBits}`){inp.className='correct';fb.className='feedback ok';fb.textContent='✓';score++}
+  else{inp.className='wrong';fb.className='feedback nope';fb.textContent=`Erwartet: 2^${subBits} = ${numSubnets.toLocaleString('de-DE')}`}
+  
+  // first 3 subnets
+  for(let i=0;i<3;i++){
+    inp=document.getElementById(`q-sub${i+1}`);fb=document.getElementById(`fb-sub${i+1}`);
+    let expected;
+    if(curSubnet.pl===48){
+      expected=expandSubnetAddr(`${curSubnet.base}:${i.toString(16).padStart(4,'0')}::`);
+    } else {
+      expected=expandSubnetAddr(makeSubnet(curSubnet.base,curSubnet.pl,i).replace('/64',''));
+    }
+    let userVal;
+    try{userVal=expandSubnetAddr(inp.value.replace(/\/64$/,''))}catch(e){userVal=''}
+    if(userVal===expected){inp.className='correct';fb.className='feedback ok';fb.textContent='✓';score++}
+    else{
+      let nice;
+      if(curSubnet.pl===48)nice=`${curSubnet.base}:${i.toString(16).padStart(4,'0')}::/64`;
+      else nice=makeSubnet(curSubnet.base,curSubnet.pl,i);
+      inp.className='wrong';fb.className='feedback nope';fb.textContent='Erwartet: '+nice;
+    }
+  }
+  
+  const pct=Math.round(score/total*100);
+  document.getElementById('subnet-score-fill').style.width=pct+'%';
+  document.getElementById('subnet-score-text').textContent=`${score}/${total} richtig (${pct}%)`;
+}
+
+function newSubnet(){
+  pickSubnet();renderSubnet();
+  ['q-subbits','q-subnets','q-sub1','q-sub2','q-sub3'].forEach(id=>{const e=document.getElementById(id);e.value='';e.className=''});
+  ['fb-subbits','fb-subnets','fb-sub1','fb-sub2','fb-sub3'].forEach(id=>{const e=document.getElementById(id);e.textContent='';e.className='feedback'});
+  document.getElementById('subnet-score-fill').style.width='0%';document.getElementById('subnet-score-text').textContent='';
+}
+
+pickStruct();renderStruct();pickSubnet();renderSubnet();
+</script>
+</body>
+</html>

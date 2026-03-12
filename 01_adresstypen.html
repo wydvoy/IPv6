@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>01 – Adresstypen & Präfixe</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#2a3550;--text:#e2e8f0;--dim:#64748b;--accent:#22d3ee;--accent2:#a78bfa;--green:#34d399;--red:#f87171;--orange:#fbbf24}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.noise{position:fixed;top:0;left:0;width:100%;height:100%;opacity:.03;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.container{max-width:800px;margin:0 auto;padding:40px 24px;position:relative;z-index:1}
+nav{display:flex;align-items:center;gap:16px;margin-bottom:48px}
+nav a{color:var(--dim);text-decoration:none;font-size:.9rem;transition:color .2s}
+nav a:hover{color:var(--accent)}
+.nav-sep{color:var(--border)}
+.nav-current{color:var(--text);font-weight:500}
+h1{font-size:1.8rem;font-weight:900;margin-bottom:8px}
+h1 span{color:var(--accent)}
+.subtitle{color:var(--dim);margin-bottom:40px;font-size:.95rem}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px}
+.section-title{font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.section h2{font-size:1.2rem;font-weight:700;margin-bottom:4px}
+.section-desc{color:var(--dim);font-size:.85rem;margin-bottom:24px}
+.exercise-row{display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.addr{font-family:'JetBrains Mono',monospace;font-size:.9rem;background:var(--surface2);border:1px solid var(--border);padding:8px 14px;border-radius:8px;min-width:280px;color:var(--accent)}
+select{font-family:'Outfit',sans-serif;font-size:.9rem;background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:8px 14px;border-radius:8px;cursor:pointer;min-width:200px;outline:none;transition:border-color .2s}
+select:focus{border-color:var(--accent)}
+select.correct{border-color:var(--green);background:rgba(52,211,153,.08)}
+select.wrong{border-color:var(--red);background:rgba(248,113,113,.08)}
+.feedback{font-size:.8rem;margin-left:8px;font-weight:500;min-width:20px}
+.feedback.ok{color:var(--green)}
+.feedback.nope{color:var(--red)}
+input[type="text"]{font-family:'JetBrains Mono',monospace;font-size:.9rem;background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:8px 14px;border-radius:8px;outline:none;width:100%;transition:border-color .2s}
+input[type="text"]:focus{border-color:var(--accent)}
+input.correct{border-color:var(--green);background:rgba(52,211,153,.08)}
+input.wrong{border-color:var(--red);background:rgba(248,113,113,.08)}
+.prefix-row{display:grid;grid-template-columns:160px 1fr 120px auto;align-items:center;gap:12px;margin-bottom:14px}
+.prefix-label{font-weight:500;font-size:.95rem}
+.btn{font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:600;padding:10px 24px;border-radius:10px;border:none;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}.btn-primary:hover{opacity:.85;transform:translateY(-1px)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--accent)}
+.btn-row{display:flex;gap:12px;margin-top:24px}
+.score-bar{background:var(--surface2);border-radius:10px;height:8px;margin-top:16px;overflow:hidden}
+.score-fill{height:100%;border-radius:10px;transition:width .5s ease;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.score-text{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--dim);margin-top:8px;text-align:right}
+textarea{font-family:'Outfit',sans-serif;font-size:.9rem;background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:12px 14px;border-radius:8px;outline:none;width:100%;resize:vertical;min-height:80px;transition:border-color .2s;line-height:1.5}
+textarea:focus{border-color:var(--accent)}
+.hint{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:14px 18px;margin-top:12px;display:none;color:var(--orange);font-size:.85rem}
+.hint.visible{display:block}
+.explain-box{background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15);border-radius:10px;padding:14px 18px;margin-top:12px;display:none;color:var(--green);font-size:.85rem;line-height:1.6}
+.explain-box.visible{display:block}
+@media(max-width:600px){.exercise-row{flex-direction:column;align-items:stretch}.addr{min-width:auto}.prefix-row{grid-template-columns:1fr;gap:8px}}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="container">
+<nav>
+  <a href="index.html">← Übersicht</a>
+  <span class="nav-sep">/</span>
+  <span class="nav-current">01 Adresstypen</span>
+</nav>
+
+<h1>Adresstypen <span>& Präfixe</span></h1>
+<p class="subtitle">Aufgabe 1 der Klausur · 25 Punkte</p>
+
+<!-- 1.1 Zuordnung -->
+<div class="section">
+  <div class="section-title">Aufgabe 1.1 · 10 Punkte</div>
+  <h2>Adressen den Typen zuordnen</h2>
+  <p class="section-desc">Wähle für jede IPv6-Adresse den korrekten Adresstyp.</p>
+  <div id="matching-exercises"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkMatching()">Prüfen</button>
+    <button class="btn btn-secondary" onclick="resetMatching()">Zurücksetzen</button>
+    <button class="btn btn-secondary" onclick="newMatchingSet()">Neue Aufgaben</button>
+  </div>
+  <div class="score-bar"><div class="score-fill" id="match-score-fill" style="width:0%"></div></div>
+  <div class="score-text" id="match-score-text"></div>
+</div>
+
+<!-- 1.2 Präfixe -->
+<div class="section">
+  <div class="section-title">Aufgabe 1.2 · 15 Punkte</div>
+  <h2>Präfixe kennen</h2>
+  <p class="section-desc">Trage das korrekte Präfix für jeden Adresstyp ein.</p>
+  <div id="prefix-exercises"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="checkPrefixes()">Prüfen</button>
+    <button class="btn btn-secondary" onclick="resetPrefixes()">Zurücksetzen</button>
+  </div>
+  <div class="score-bar"><div class="score-fill" id="prefix-score-fill" style="width:0%"></div></div>
+  <div class="score-text" id="prefix-score-text"></div>
+</div>
+
+<!-- 1.2b Erklärungen -->
+<div class="section">
+  <div class="section-title">Aufgabe 1.2 Bonus</div>
+  <h2>Adresstypen erklären</h2>
+  <p class="section-desc">Beschreibe Verwendungszweck und Reichweite. Klicke auf "Lösung zeigen" zum Vergleichen.</p>
+  <div id="explain-exercises"></div>
+</div>
+
+</div>
+
+<script>
+const addressPool = [
+  {addr:'2001:0db8:85a3::8a2e:0370:7334', type:'Dokumentation/Beispiel', hint:'Schau auf das Präfix 2001:0db8 bzw. 2001:db8'},
+  {addr:'fe80::1', type:'Link Local', hint:'fe80:: ist das typische Link-Local-Präfix'},
+  {addr:'ff02::1', type:'Multicast', hint:'ff am Anfang = Multicast'},
+  {addr:'fc00::/7', type:'Unique Local', hint:'fc00::/7 ist der ULA-Bereich'},
+  {addr:'2001:db8::/32', type:'Dokumentation/Beispiel', hint:'2001:db8::/32 ist explizit für Dokumentation reserviert'},
+  {addr:'fe80::a1b2:c3d4:e5f6:7890', type:'Link Local', hint:'fe80:: Präfix = Link Local'},
+  {addr:'ff05::2', type:'Multicast', hint:'ff am Anfang = Multicast, 05 = site scope'},
+  {addr:'fd12:3456:789a::1', type:'Unique Local', hint:'fd... gehört zu fc00::/7 (Unique Local)'},
+  {addr:'2607:f8b0:4004:800::200e', type:'Global Unicast', hint:'2xxx = Global Unicast (routbar im Internet)'},
+  {addr:'2a00:1450:4001:81f::2004', type:'Global Unicast', hint:'2xxx = Global Unicast'},
+  {addr:'ff01::1', type:'Multicast', hint:'ff = Multicast, 01 = node-local scope'},
+  {addr:'fe80::1ff:fe23:4567:890a', type:'Link Local', hint:'fe80:: = Link Local'},
+  {addr:'2001:0db8:1234::1', type:'Dokumentation/Beispiel', hint:'2001:0db8 = Dokumentationsbereich'},
+  {addr:'fc12::abcd:ef01:2345', type:'Unique Local', hint:'fc... = Unique Local'},
+  {addr:'ff02::2', type:'Multicast', hint:'ff02::2 = All Routers Multicast'},
+  {addr:'2001:470:1f06:e75::2', type:'Global Unicast', hint:'2001:470 = Hurricane Electric (Global Unicast)'},
+  {addr:'fd00::1', type:'Unique Local', hint:'fd00:: = Unique Local (praktisch genutzter Bereich)'},
+  {addr:'ff02::1:ff00:1', type:'Multicast', hint:'ff02::1:ff = Solicited-Node Multicast'},
+];
+
+const types = ['Global Unicast','Link Local','Multicast','Unique Local','Dokumentation/Beispiel'];
+let currentSet = [];
+
+function shuffle(arr){let a=[...arr];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function pickSet(){
+  let shuffled = shuffle(addressPool);
+  currentSet = shuffled.slice(0,6);
+}
+
+function renderMatching(){
+  const c = document.getElementById('matching-exercises');
+  c.innerHTML = '';
+  currentSet.forEach((item,i) => {
+    const row = document.createElement('div');
+    row.className = 'exercise-row';
+    row.innerHTML = `
+      <div class="addr">${item.addr}</div>
+      <select id="match-${i}" onchange="this.className=''">
+        <option value="">— Typ wählen —</option>
+        ${types.map(t=>`<option value="${t}">${t}</option>`).join('')}
+      </select>
+      <span class="feedback" id="match-fb-${i}"></span>
+    `;
+    c.appendChild(row);
+  });
+}
+
+function checkMatching(){
+  let score=0;
+  currentSet.forEach((item,i)=>{
+    const sel=document.getElementById(`match-${i}`);
+    const fb=document.getElementById(`match-fb-${i}`);
+    if(sel.value===item.type){sel.className='correct';fb.className='feedback ok';fb.textContent='✓';score++}
+    else{sel.className='wrong';fb.className='feedback nope';fb.textContent=item.hint?'→ '+item.type:'✗'}
+  });
+  const pct=Math.round(score/currentSet.length*100);
+  document.getElementById('match-score-fill').style.width=pct+'%';
+  document.getElementById('match-score-text').textContent=`${score}/${currentSet.length} richtig (${pct}%)`;
+}
+
+function resetMatching(){
+  currentSet.forEach((_,i)=>{
+    const sel=document.getElementById(`match-${i}`);sel.value='';sel.className='';
+    document.getElementById(`match-fb-${i}`).textContent='';document.getElementById(`match-fb-${i}`).className='feedback';
+  });
+  document.getElementById('match-score-fill').style.width='0%';
+  document.getElementById('match-score-text').textContent='';
+}
+
+function newMatchingSet(){pickSet();renderMatching();document.getElementById('match-score-fill').style.width='0%';document.getElementById('match-score-text').textContent=''}
+
+// Prefixes
+const prefixData = [
+  {type:'Global Unicast', prefix:'2000::/3', alt:['2000::/3']},
+  {type:'Link Local', prefix:'fe80::/10', alt:['fe80::/10']},
+  {type:'Multicast', prefix:'ff00::/8', alt:['ff00::/8','ff::/8']},
+  {type:'Unique Local', prefix:'fc00::/7', alt:['fc00::/7','fd00::/8']},
+  {type:'Dokumentation', prefix:'2001:db8::/32', alt:['2001:db8::/32','2001:0db8::/32']},
+];
+
+function renderPrefixes(){
+  const c=document.getElementById('prefix-exercises');c.innerHTML='';
+  prefixData.forEach((item,i)=>{
+    const row=document.createElement('div');row.className='prefix-row';
+    row.innerHTML=`
+      <span class="prefix-label">${item.type}</span>
+      <input type="text" id="pfx-${i}" placeholder="z.B. fe80::/10" autocomplete="off" spellcheck="false">
+      <span class="feedback" id="pfx-fb-${i}"></span>
+    `;
+    c.appendChild(row);
+  });
+}
+
+function checkPrefixes(){
+  let score=0;
+  prefixData.forEach((item,i)=>{
+    const inp=document.getElementById(`pfx-${i}`);
+    const fb=document.getElementById(`pfx-fb-${i}`);
+    const val=inp.value.trim().toLowerCase().replace(/\s/g,'');
+    if(item.alt.some(a=>a.toLowerCase()===val)){inp.className='correct';fb.className='feedback ok';fb.textContent='✓';score++}
+    else{inp.className='wrong';fb.className='feedback nope';fb.textContent=item.prefix}
+  });
+  const pct=Math.round(score/prefixData.length*100);
+  document.getElementById('prefix-score-fill').style.width=pct+'%';
+  document.getElementById('prefix-score-text').textContent=`${score}/${prefixData.length} richtig (${pct}%)`;
+}
+
+function resetPrefixes(){
+  prefixData.forEach((_,i)=>{
+    const inp=document.getElementById(`pfx-${i}`);inp.value='';inp.className='';
+    document.getElementById(`pfx-fb-${i}`).textContent='';document.getElementById(`pfx-fb-${i}`).className='feedback';
+  });
+  document.getElementById('prefix-score-fill').style.width='0%';
+  document.getElementById('prefix-score-text').textContent='';
+}
+
+// Explain section
+const explainData = [
+  {type:'Global Unicast',answer:'Weltweit routbare Adressen (Präfix 2000::/3). Vergleichbar mit öffentlichen IPv4-Adressen. Werden für die Kommunikation im Internet verwendet.'},
+  {type:'Link Local',answer:'Präfix fe80::/10. Nur im lokalen Netzwerksegment gültig, nicht routbar. Wird automatisch auf jedem IPv6-Interface konfiguriert.'},
+  {type:'Multicast',answer:'Präfix ff00::/8. Für Gruppenkommunikation – eine Nachricht an mehrere Empfänger gleichzeitig. Ersetzt Broadcast aus IPv4.'},
+  {type:'Anycast',answer:'Kein eigenes Präfix (aus dem Unicast-Adressraum). Mehrere Hosts teilen sich dieselbe Adresse. Pakete werden zum nächstgelegenen Host geroutet.'},
+  {type:'Unique Local',answer:'Präfix fc00::/7 (praktisch fd00::/8). Für private Netzwerke, nicht im Internet routbar. Vergleichbar mit privaten IPv4-Adressen (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16).'},
+];
+
+function renderExplain(){
+  const c=document.getElementById('explain-exercises');c.innerHTML='';
+  explainData.forEach((item,i)=>{
+    const div=document.createElement('div');div.style.marginBottom='20px';
+    div.innerHTML=`
+      <label style="font-weight:600;display:block;margin-bottom:8px">${item.type}</label>
+      <textarea id="expl-${i}" placeholder="Verwendungszweck, Reichweite, Präfix…"></textarea>
+      <div style="margin-top:8px"><button class="btn btn-secondary" onclick="document.getElementById('expl-sol-${i}').classList.toggle('visible')" style="font-size:.8rem;padding:6px 14px">Lösung zeigen</button></div>
+      <div class="explain-box" id="expl-sol-${i}">${item.answer}</div>
+    `;
+    c.appendChild(div);
+  });
+}
+
+// Init
+pickSet();renderMatching();renderPrefixes();renderExplain();
+</script>
+</body>
+</html>
