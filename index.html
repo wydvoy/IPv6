@@ -17,47 +17,76 @@
 body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 .noise{position:fixed;top:0;left:0;width:100%;height:100%;opacity:.03;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 .grid-bg{position:fixed;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(34,211,238,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.04) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
-.container{max-width:900px;margin:0 auto;padding:60px 24px;position:relative;z-index:1}
-.hero{text-align:center;margin-bottom:80px}
+.container{max-width:1100px;margin:0 auto;padding:60px 24px;position:relative;z-index:1}
+.hero{text-align:center;margin-bottom:64px}
 .hero-label{font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;opacity:.8}
 h1{font-size:clamp(2.5rem,6vw,4rem);font-weight:900;letter-spacing:-.02em;line-height:1.1;margin-bottom:16px}
 h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .hero p{color:var(--dim);font-size:1.1rem;max-width:500px;margin:0 auto;line-height:1.6}
-.cards{display:grid;gap:20px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;display:flex;align-items:center;gap:24px;text-decoration:none;color:var(--text);transition:all .25s ease;position:relative;overflow:hidden}
+
+/* Column headers */
+.col-headers{display:grid;grid-template-columns:1fr .45fr;gap:16px;margin-bottom:16px;padding:0 4px}
+.col-header{font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dim)}
+.col-header-accent{color:var(--accent)}
+.col-header-accent2{color:var(--accent2)}
+
+/* Row pair: exercise + explanation side by side */
+.row{display:grid;grid-template-columns:1fr .45fr;gap:16px;margin-bottom:20px}
+
+/* Shared card base */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 24px;display:flex;align-items:center;gap:20px;text-decoration:none;color:var(--text);transition:all .25s ease;position:relative;overflow:hidden}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity .25s}
-.card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 32px rgba(34,211,238,.08)}.card:hover::before{opacity:1}
-.card-num{font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:700;color:var(--accent);opacity:.5;min-width:48px;text-align:center}
-.card-body h2{font-size:1.2rem;font-weight:700;margin-bottom:4px}
-.card-body p{color:var(--dim);font-size:.9rem}
-.card-arrow{margin-left:auto;color:var(--dim);font-size:1.5rem;transition:transform .25s,color .25s}
-.card:hover .card-arrow{transform:translateX(4px);color:var(--accent)}
-.badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:.65rem;padding:3px 8px;border-radius:6px;margin-top:8px;letter-spacing:.05em}
+.card:hover{transform:translateY(-2px)}.card:hover::before{opacity:1}
+.card-num{font-family:'JetBrains Mono',monospace;font-size:1.8rem;font-weight:700;color:var(--accent);opacity:.4;min-width:40px;text-align:center;flex-shrink:0}
+.card-body{min-width:0}
+.card-body h2{font-size:1.1rem;font-weight:700;margin-bottom:3px}
+.card-body p{color:var(--dim);font-size:.85rem;line-height:1.4}
+.card-arrow{margin-left:auto;color:var(--dim);font-size:1.3rem;transition:transform .25s,color .25s;flex-shrink:0}
+
+/* Exercise card */
+.card-exercise:hover{border-color:var(--accent);box-shadow:0 8px 32px rgba(34,211,238,.08)}
+.card-exercise:hover .card-arrow{transform:translateX(4px);color:var(--accent)}
+
+/* Explanation card — smaller, purple accent */
+.card-explain{padding:20px 18px;border-color:rgba(167,139,250,.15);gap:14px}
+.card-explain::before{background:linear-gradient(90deg,transparent,var(--accent2),transparent)}
+.card-explain:hover{border-color:var(--accent2);box-shadow:0 6px 24px rgba(167,139,250,.08)}
+.card-explain .card-num{font-size:1.2rem;color:var(--accent2);min-width:32px;opacity:.35}
+.card-explain .card-body h2{font-size:.9rem;font-weight:600}
+.card-explain .card-body p{font-size:.78rem;line-height:1.35}
+.card-explain .card-arrow{font-size:1.1rem}
+.card-explain:hover .card-arrow{transform:translateX(4px);color:var(--accent2)}
+
+/* Badges */
+.badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:.6rem;padding:2px 7px;border-radius:5px;margin-top:6px;letter-spacing:.05em}
 .badge-blue{background:rgba(34,211,238,.1);color:var(--accent);border:1px solid rgba(34,211,238,.2)}
 .badge-purple{background:rgba(167,139,250,.1);color:var(--accent2);border:1px solid rgba(167,139,250,.2)}
 .badge-green{background:rgba(52,211,153,.1);color:var(--green);border:1px solid rgba(52,211,153,.2)}
-.section-divider{text-align:center;margin:60px 0 40px;position:relative}
-.section-divider::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--border)}
-.section-divider span{background:var(--bg);padding:0 20px;position:relative;font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
-.card-explain{border-color:rgba(167,139,250,.2)}
-.card-explain:hover{border-color:var(--accent2);box-shadow:0 8px 32px rgba(167,139,250,.08)}
-.card-explain:hover::before{background:linear-gradient(90deg,transparent,var(--accent2),transparent)}
-.card-explain .card-num{color:var(--accent2)}
-.card-explain:hover .card-arrow{color:var(--accent2)}
-.card-explain .badge{background:rgba(167,139,250,.1);color:var(--accent2);border:1px solid rgba(167,139,250,.2)}
+.badge-explain{background:rgba(167,139,250,.08);color:var(--accent2);border:1px solid rgba(167,139,250,.15);font-size:.55rem}
+
 .footer{text-align:center;margin-top:80px;color:var(--dim);font-size:.8rem;font-family:'JetBrains Mono',monospace}
+
+/* Animation */
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-.card{animation:fadeUp .5s ease both}
-.card:nth-child(1){animation-delay:.1s}
-.card:nth-child(2){animation-delay:.2s}
-.card:nth-child(3){animation-delay:.3s}
-.card:nth-child(4){animation-delay:.4s}
-.card:nth-child(5){animation-delay:.5s}
-.card:nth-child(6){animation-delay:.15s}
-.card:nth-child(7){animation-delay:.25s}
-.card:nth-child(8){animation-delay:.35s}
-.card:nth-child(9){animation-delay:.45s}
-.card:nth-child(10){animation-delay:.55s}
+.row{animation:fadeUp .5s ease both}
+.row:nth-child(1){animation-delay:.1s}
+.row:nth-child(2){animation-delay:.2s}
+.row:nth-child(3){animation-delay:.3s}
+.row:nth-child(4){animation-delay:.4s}
+.row:nth-child(5){animation-delay:.5s}
+
+/* Responsive: stack on mobile */
+@media(max-width:720px){
+  .col-headers{display:none}
+  .row{grid-template-columns:1fr;gap:10px}
+  .card-explain{flex-direction:row;padding:16px 18px}
+  .card-explain .card-num{display:none}
+}
+@media(max-width:480px){
+  .card{padding:20px 16px;gap:14px}
+  .card-num{font-size:1.4rem;min-width:32px}
+  .card-body h2{font-size:1rem}
+}
 </style>
 </head>
 <body>
@@ -69,8 +98,15 @@ h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-
     <h1>IPv6 <span>Trainer</span></h1>
     <p>Interaktive Übungen zur Klausurvorbereitung. Wähle ein Thema und teste dein Wissen.</p>
   </div>
-  <div class="cards">
-    <a class="card" href="01_adresstypen.html">
+
+  <div class="col-headers">
+    <div class="col-header col-header-accent">Übung</div>
+    <div class="col-header col-header-accent2">Erklärung</div>
+  </div>
+
+  <!-- 01 -->
+  <div class="row">
+    <a class="card card-exercise" href="01_adresstypen.html">
       <div class="card-num">01</div>
       <div class="card-body">
         <h2>Adresstypen & Präfixe</h2>
@@ -79,7 +115,20 @@ h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-
       </div>
       <div class="card-arrow">→</div>
     </a>
-    <a class="card" href="02_komprimierung.html">
+    <a class="card card-explain" href="erkl_01_adresstypen.html">
+      <div class="card-num">01</div>
+      <div class="card-body">
+        <h2>Adresstypen verstehen</h2>
+        <p>Global Unicast, Link-Local, Multicast, ULA & mehr.</p>
+        <span class="badge badge-explain">Erklärung</span>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+  </div>
+
+  <!-- 02 -->
+  <div class="row">
+    <a class="card card-exercise" href="02_komprimierung.html">
       <div class="card-num">02</div>
       <div class="card-body">
         <h2>Komprimierung & Expandierung</h2>
@@ -88,7 +137,20 @@ h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-
       </div>
       <div class="card-arrow">→</div>
     </a>
-    <a class="card" href="03_subnetting.html">
+    <a class="card card-explain" href="erkl_02_komprimierung.html">
+      <div class="card-num">02</div>
+      <div class="card-body">
+        <h2>Komprimierung verstehen</h2>
+        <p>Die zwei Regeln Schritt für Schritt erklärt.</p>
+        <span class="badge badge-explain">Erklärung</span>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+  </div>
+
+  <!-- 03 -->
+  <div class="row">
+    <a class="card card-exercise" href="03_subnetting.html">
       <div class="card-num">03</div>
       <div class="card-body">
         <h2>Netzwerkpräfix & Subnetting</h2>
@@ -97,7 +159,20 @@ h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-
       </div>
       <div class="card-arrow">→</div>
     </a>
-    <a class="card" href="04_eui64.html">
+    <a class="card card-explain" href="erkl_03_subnetting.html">
+      <div class="card-num">03</div>
+      <div class="card-body">
+        <h2>Subnetting verstehen</h2>
+        <p>Präfix, Interface ID & Subnetze berechnen.</p>
+        <span class="badge badge-explain">Erklärung</span>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+  </div>
+
+  <!-- 04 -->
+  <div class="row">
+    <a class="card card-exercise" href="04_eui64.html">
       <div class="card-num">04</div>
       <div class="card-body">
         <h2>EUI-64: MAC → Interface ID</h2>
@@ -106,7 +181,20 @@ h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-
       </div>
       <div class="card-arrow">→</div>
     </a>
-    <a class="card" href="05_begriffe.html">
+    <a class="card card-explain" href="erkl_04_eui64.html">
+      <div class="card-num">04</div>
+      <div class="card-body">
+        <h2>EUI-64 verstehen</h2>
+        <p>Alle 4 Schritte mit Beispielen erklärt.</p>
+        <span class="badge badge-explain">Erklärung</span>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+  </div>
+
+  <!-- 05 -->
+  <div class="row">
+    <a class="card card-exercise" href="05_begriffe.html">
       <div class="card-num">05</div>
       <div class="card-body">
         <h2>Begriffsdefinitionen</h2>
@@ -115,56 +203,18 @@ h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-
       </div>
       <div class="card-arrow">→</div>
     </a>
-  </div>
-  <div class="section-divider"><span>Erkl&auml;rungen</span></div>
-  <div class="cards">
-    <a class="card card-explain" href="erkl_01_adresstypen.html">
-      <div class="card-num">01</div>
-      <div class="card-body">
-        <h2>Adresstypen & Pr&auml;fixe verstehen</h2>
-        <p>Was sind Global Unicast, Link-Local, Multicast, Unique Local und Dokumentationsadressen?</p>
-        <span class="badge">Erkl&auml;rung</span>
-      </div>
-      <div class="card-arrow">&rarr;</div>
-    </a>
-    <a class="card card-explain" href="erkl_02_komprimierung.html">
-      <div class="card-num">02</div>
-      <div class="card-body">
-        <h2>Komprimierung & Expandierung verstehen</h2>
-        <p>Die zwei Regeln zur K&uuml;rzung und das Zur&uuml;ckf&uuml;hren in die Langform &ndash; Schritt f&uuml;r Schritt.</p>
-        <span class="badge">Erkl&auml;rung</span>
-      </div>
-      <div class="card-arrow">&rarr;</div>
-    </a>
-    <a class="card card-explain" href="erkl_03_subnetting.html">
-      <div class="card-num">03</div>
-      <div class="card-body">
-        <h2>Netzwerkpr&auml;fix & Subnetting verstehen</h2>
-        <p>Wie Pr&auml;fix und Interface ID zusammenspielen und wie man Subnetze berechnet.</p>
-        <span class="badge">Erkl&auml;rung</span>
-      </div>
-      <div class="card-arrow">&rarr;</div>
-    </a>
-    <a class="card card-explain" href="erkl_04_eui64.html">
-      <div class="card-num">04</div>
-      <div class="card-body">
-        <h2>EUI-64 verstehen</h2>
-        <p>MAC-Adresse zur Interface ID &ndash; alle 4 Schritte ausf&uuml;hrlich erkl&auml;rt mit Beispielen.</p>
-        <span class="badge">Erkl&auml;rung</span>
-      </div>
-      <div class="card-arrow">&rarr;</div>
-    </a>
     <a class="card card-explain" href="erkl_05_begriffe.html">
       <div class="card-num">05</div>
       <div class="card-body">
-        <h2>Begriffe & Technologien verstehen</h2>
-        <p>Dual Stack, Tunneling, NAT64, SLAAC, IPv6-Header und mehr &ndash; verst&auml;ndlich erkl&auml;rt.</p>
-        <span class="badge">Erkl&auml;rung</span>
+        <h2>Begriffe verstehen</h2>
+        <p>Dual Stack, Tunneling, NAT64, SLAAC & Header.</p>
+        <span class="badge badge-explain">Erklärung</span>
       </div>
-      <div class="card-arrow">&rarr;</div>
+      <div class="card-arrow">→</div>
     </a>
   </div>
-  <div class="footer">IPv6 Klausurvorbereitung &middot; IT-Systeme / Netzwerktechnik &middot; 100 Punkte gesamt</div>
+
+  <div class="footer">IPv6 Klausurvorbereitung · IT-Systeme / Netzwerktechnik · 100 Punkte gesamt</div>
 </div>
 </body>
 </html>
