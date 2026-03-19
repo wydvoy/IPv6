@@ -66,8 +66,8 @@ input.wrong{border-color:var(--red);background:rgba(248,113,113,.08)}
   <div class="steps-box">
     <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Aufteilen</strong> – MAC-Adresse nach dem 3. Oktett in zwei Hälften teilen.</div></div>
     <div class="step"><div class="step-num">2</div><div class="step-text"><strong>FF:FE einfügen</strong> – In der Mitte <code>FF:FE</code> einfügen → 8 Oktette (64 Bit).</div></div>
-    <div class="step"><div class="step-num">3</div><div class="step-text"><strong>7. Bit flippen</strong> – Das 7. Bit (Universal/Local-Bit) des <strong>ersten Oktetts</strong> invertieren.<br>
-    Bit 7 zählt von links: Bit 8 7 6 5 4 3 2 1. Position 7 hat den Wert 2 (0000 00<strong>x</strong>0).</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-text"><strong>U/L-Bit flippen</strong> – Das 7. Bit von links (Universal/Local-Bit) des <strong>ersten Oktetts</strong> invertieren.<br>
+    Bit-Nummerierung: 8 7 6 5 4 3 2 1. Das 7. Bit von links = Bit 2 = Wert 2 (0000 00<strong>x</strong>0).</div></div>
     <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Gruppieren</strong> – Die 8 Oktette in IPv6-Hextets schreiben (je 2 Oktette = 1 Hextet).</div></div>
   </div>
 </div>

@@ -221,7 +221,7 @@ function compressAddr(full){
       if(curLen>bestLen){bestLen=curLen;bestStart=curStart}
     } else {curStart=-1;curLen=0}
   }
-  if(bestLen>=1){
+  if(bestLen>=2){
     let left=hextets.slice(0,bestStart).join(':');
     let right=hextets.slice(bestStart+bestLen).join(':');
     return left+'::'+right;

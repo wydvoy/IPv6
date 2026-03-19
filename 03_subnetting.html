@@ -214,8 +214,8 @@ const subnetPool = [
   {prefix:'2001:db8:abcd::/48', pl:48, base:'2001:db8:abcd'},
   {prefix:'2001:db8:1234::/48', pl:48, base:'2001:db8:1234'},
   {prefix:'2001:db8:ff00::/48', pl:48, base:'2001:db8:ff00'},
-  {prefix:'2001:db8:a000::/44', pl:44, base:'2001:db8:a00'},
-  {prefix:'2001:db8:b000::/36', pl:36, base:'2001:db8:b0'},
+  {prefix:'2001:db8:a000::/44', pl:44, base:'2001:db8:a000'},
+  {prefix:'2001:db8:b000::/36', pl:36, base:'2001:db8:b000'},
 ];
 
 let curSubnet;
@@ -248,17 +248,15 @@ function makeSubnet(base,pl,idx){
   if(pl===48){hextets[3]=idx.toString(16).padStart(4,'0')}
   else if(pl===44){
     let combined=parseInt(hextets[2],16);
-    let mask=0xfff0;
-    hextets[2]=((combined&mask)|((idx>>4)&0xf)).toString(16).padStart(4,'0');
-    hextets[3]=(((idx&0xf)<<12)).toString(16).padStart(4,'0');
+    // /44: 20 subnet bits (44-63). Bottom 4 bits of hextet[2] + all 16 bits of hextet[3]
+    hextets[2]=((combined&0xfff0)|((idx>>16)&0xf)).toString(16).padStart(4,'0');
+    hextets[3]=(idx&0xffff).toString(16).padStart(4,'0');
   }
   else if(pl===36){
     let combined=parseInt(hextets[2],16);
-    let mask=0xfff0;
-    // bits 36-63 = 28 bits for subnets
-    let highNibble=(idx>>16)&0xf;
-    hextets[2]=((combined&0xf000)|((idx>>12)&0xfff)).toString(16).padStart(4,'0');
-    hextets[3]=((idx&0xfff)<<4).toString(16).padStart(4,'0');
+    // /36: 28 subnet bits (36-63). Bottom 12 bits of hextet[2] + all 16 bits of hextet[3]
+    hextets[2]=((combined&0xf000)|((idx>>16)&0xfff)).toString(16).padStart(4,'0');
+    hextets[3]=(idx&0xffff).toString(16).padStart(4,'0');
   }
   return hextets.join(':')+'/64';
 }
