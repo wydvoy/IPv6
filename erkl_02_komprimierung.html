@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Erklärung – IPv6 Komprimierung & Expandierung</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#2a3550;--text:#e2e8f0;--dim:#64748b;--accent:#22d3ee;--accent2:#a78bfa;--green:#34d399;--red:#f87171;--orange:#fbbf24}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.noise{position:fixed;top:0;left:0;width:100%;height:100%;opacity:.03;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.container{max-width:800px;margin:0 auto;padding:40px 24px;position:relative;z-index:1}
+nav{display:flex;align-items:center;gap:16px;margin-bottom:48px}
+nav a{color:var(--dim);text-decoration:none;font-size:.9rem;transition:color .2s}nav a:hover{color:var(--accent2)}
+.nav-sep{color:var(--border)}.nav-current{color:var(--text);font-weight:500}
+h1{font-size:1.8rem;font-weight:900;margin-bottom:8px}
+h1 span{color:var(--accent2)}
+.subtitle{color:var(--dim);margin-bottom:40px;font-size:.95rem}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px}
+.section-title{font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent2);margin-bottom:16px}
+.section h2{font-size:1.2rem;font-weight:700;margin-bottom:4px}
+.section-desc{color:var(--dim);font-size:.85rem;margin-bottom:24px}
+.section p{font-size:.92rem;line-height:1.7;margin-bottom:12px}
+.section ul,.section ol{font-size:.92rem;line-height:1.7;margin:0 0 16px 20px}
+.section li{margin-bottom:6px}
+code{font-family:'JetBrains Mono',monospace;background:rgba(167,139,250,.1);padding:2px 6px;border-radius:4px;font-size:.85rem;color:var(--accent2)}
+.addr{font-family:'JetBrains Mono',monospace;font-size:.95rem;color:var(--accent)}
+
+/* Transformation boxes */
+.transform-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin:16px 0 20px;overflow-x:auto}
+.transform-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.transform-row:last-child{margin-bottom:0}
+.transform-label{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);min-width:100px}
+.transform-addr{font-family:'JetBrains Mono',monospace;font-size:.9rem;color:var(--text);word-break:break-all}
+.transform-arrow{color:var(--accent2);font-size:1.2rem;font-weight:700;margin:4px 0 4px 56px}
+
+/* Hextet breakdown */
+.hextet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin:16px 0}
+.hextet-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:.85rem}
+.hextet-item .before{color:var(--dim);text-decoration:line-through;margin-bottom:4px}
+.hextet-item .removed{color:var(--red);opacity:.5}
+.hextet-item .after{color:var(--green);font-weight:700}
+.hextet-item .arrow-down{color:var(--accent2);font-size:.8rem}
+
+/* Warning/info boxes */
+.warning-box{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:16px 20px;margin:16px 0;font-size:.9rem;line-height:1.6}
+.warning-box strong{color:var(--red)}
+.info-box{background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.2);border-radius:12px;padding:16px 20px;margin:16px 0;font-size:.9rem;line-height:1.6}
+.info-box strong{color:var(--accent2)}
+.tip-box{background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.2);border-radius:12px;padding:16px 20px;margin:16px 0;font-size:.9rem;line-height:1.6}
+.tip-box strong{color:var(--green)}
+
+/* Step indicators */
+.step{display:flex;gap:16px;margin-bottom:20px;align-items:flex-start}
+.step-num{font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:700;color:var(--bg);background:var(--accent2);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-content{flex:1}
+.step-content p{margin-bottom:8px}
+
+/* Error list */
+.error-item{display:flex;gap:12px;align-items:flex-start;margin-bottom:16px}
+.error-item:last-child{margin-bottom:0}
+.error-icon{color:var(--red);font-size:1.1rem;flex-shrink:0;margin-top:2px}
+.error-text{font-size:.9rem;line-height:1.6}
+.error-text code.wrong-example{background:rgba(248,113,113,.1);color:var(--red)}
+.error-text code.right-example{background:rgba(52,211,153,.1);color:var(--green)}
+
+/* CTA Button */
+.btn{font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:600;padding:10px 24px;border-radius:10px;border:none;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block}
+.btn-primary{background:var(--accent2);color:var(--bg)}.btn-primary:hover{opacity:.85;transform:translateY(-1px)}
+.btn-row{display:flex;gap:12px;margin-top:32px;flex-wrap:wrap;justify-content:center}
+
+/* Walkthrough compact */
+.walkthrough{margin:20px 0}
+.walkthrough-title{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--accent2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+.wt-step{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:8px}
+.wt-step:last-child{margin-bottom:0}
+.wt-step-label{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.wt-step-addr{font-family:'JetBrains Mono',monospace;font-size:.88rem;word-break:break-all}
+.wt-step-addr .highlight{color:var(--accent2);font-weight:700}
+.wt-step-addr .removed{color:var(--red);text-decoration:line-through;opacity:.5}
+.wt-step-addr .kept{color:var(--green)}
+.wt-step-addr .zeros{color:var(--orange)}
+.wt-step-addr .replaced{color:var(--accent2);font-weight:700}
+.wt-step-note{font-size:.78rem;color:var(--dim);margin-top:6px}
+.wt-result{background:linear-gradient(135deg,rgba(167,139,250,.08),rgba(34,211,238,.08));border:1px solid var(--accent2);border-radius:10px;padding:14px 18px}
+.wt-result .wt-step-addr{color:var(--accent);font-weight:700;font-size:.95rem}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="container">
+<nav>
+  <a href="index.html">&larr; &Uuml;bersicht</a><span class="nav-sep">/</span><span class="nav-current">Erkl&auml;rung: Komprimierung</span>
+</nav>
+<h1>Komprimierung <span>&amp; Expandierung</span></h1>
+<p class="subtitle">Erkl&auml;rung &middot; Die zwei Regeln zur IPv6-Kurzschreibweise (RFC 5952)</p>
+
+<!-- ═══════════════════════════════════════════ Section 1 ═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Grundlagen</div>
+  <h2>Warum Komprimierung?</h2>
+  <p class="section-desc">IPv6-Adressen sind lang &mdash; Komprimierung macht sie handhabbar.</p>
+  <p>Eine vollst&auml;ndige IPv6-Adresse besteht aus <strong>128 Bit</strong>, dargestellt als <strong>32 Hexadezimalzeichen</strong> in 8 Gruppen (Hextets) &agrave; 4 Zeichen, getrennt durch Doppelpunkte:</p>
+  <div class="transform-box">
+    <div class="transform-addr" style="text-align:center;font-size:1rem;color:var(--accent)">2001:0db8:0000:0000:0000:0000:0000:0001</div>
+  </div>
+  <p>Das sind <strong>39 Zeichen</strong> &mdash; viel zu lang f&uuml;r den Alltag. Deshalb definiert <strong>RFC 5952</strong> zwei Regeln, die Adressen deutlich k&uuml;rzer machen, ohne dass Information verloren geht:</p>
+  <div class="transform-box">
+    <div class="transform-addr" style="text-align:center;font-size:1.1rem;color:var(--green);font-weight:700">2001:db8::1</div>
+  </div>
+  <p style="text-align:center;color:var(--dim);font-size:.85rem">Aus 39 Zeichen werden 11 &mdash; dieselbe Adresse!</p>
+</div>
+
+<!-- ═══════════════════════════════════════════ Section 2 ═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Regel 1</div>
+  <h2>F&uuml;hrende Nullen entfernen</h2>
+  <p class="section-desc">In jedem Hextet d&uuml;rfen f&uuml;hrende Nullen weggelassen werden.</p>
+  <p>Betrachte jedes der 8 Hextets einzeln. Alle Nullen <strong>am Anfang</strong> (links) werden entfernt. Es muss aber <strong>mindestens eine Ziffer</strong> &uuml;brig bleiben.</p>
+
+  <div class="hextet-grid">
+    <div class="hextet-item">
+      <div class="before"><span class="removed">00</span>42</div>
+      <div class="arrow-down">&darr;</div>
+      <div class="after">42</div>
+    </div>
+    <div class="hextet-item">
+      <div class="before"><span class="removed">0</span>db8</div>
+      <div class="arrow-down">&darr;</div>
+      <div class="after">db8</div>
+    </div>
+    <div class="hextet-item">
+      <div class="before"><span class="removed">000</span>0</div>
+      <div class="arrow-down">&darr;</div>
+      <div class="after">0</div>
+    </div>
+    <div class="hextet-item">
+      <div class="before">2001</div>
+      <div class="arrow-down">&darr;</div>
+      <div class="after">2001</div>
+    </div>
+    <div class="hextet-item">
+      <div class="before"><span class="removed">0</span>001</div>
+      <div class="arrow-down">&darr;</div>
+      <div class="after">1</div>
+    </div>
+    <div class="hextet-item">
+      <div class="before"><span class="removed">0</span>200</div>
+      <div class="arrow-down">&darr;</div>
+      <div class="after">200</div>
+    </div>
+  </div>
+
+  <div class="warning-box">
+    <strong>Wichtig:</strong> <code>0000</code> wird zu <code>0</code> &mdash; nicht zu einem leeren String! Es muss immer mindestens eine Ziffer pro Hextet stehen bleiben.
+  </div>
+
+  <p><strong>Schritt-f&uuml;r-Schritt-Beispiel:</strong></p>
+  <div class="transform-box">
+    <div class="transform-row">
+      <span class="transform-label">Vorher</span>
+      <span class="transform-addr"><span class="removed">0</span>db8 : <span class="removed">000</span>0 : <span class="removed">000</span>0 : <span class="removed">000</span>0 : <span class="removed">0</span>204 : 61ff : fe9d : f156</span>
+    </div>
+    <div class="transform-row">
+      <span class="transform-label">Nachher</span>
+      <span class="transform-addr" style="color:var(--green)">db8 : 0 : 0 : 0 : 204 : 61ff : fe9d : f156</span>
+    </div>
+  </div>
+  <p style="color:var(--dim);font-size:.85rem">Vollst&auml;ndig: <code>fe80:0000:0000:0000:0204:61ff:fe9d:f156</code> &rarr; <code>fe80:0:0:0:204:61ff:fe9d:f156</code></p>
+</div>
+
+<!-- ═══════════════════════════════════════════ Section 3 ═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Regel 2</div>
+  <h2>L&auml;ngste Null-Folge durch <code>::</code> ersetzen</h2>
+  <p class="section-desc">Eine zusammenh&auml;ngende Kette von Null-Hextets kann durch :: abgek&uuml;rzt werden.</p>
+
+  <p>Nachdem Regel 1 angewandt wurde, sucht man die <strong>l&auml;ngste zusammenh&auml;ngende Folge</strong> von Hextets, die nur aus <code>0</code> bestehen. Diese wird durch <code>::</code> (Doppel-Doppelpunkt) ersetzt.</p>
+
+  <div class="warning-box">
+    <strong>Kritische Regel:</strong> <code>::</code> darf nur <strong>EINMAL</strong> pro Adresse verwendet werden! Sonst w&auml;re die Adresse nicht mehr eindeutig expandierbar.
+  </div>
+
+  <div class="info-box">
+    <strong>Bei gleicher L&auml;nge:</strong> Wenn es zwei gleich lange Null-Folgen gibt, wird die <strong>erste</strong> (weiter links stehende) ersetzt.
+  </div>
+
+  <p><strong>Beispiele:</strong></p>
+
+  <div class="transform-box">
+    <div class="wt-step-label">:: am Ende (6 Null-Hextets)</div>
+    <div class="transform-row">
+      <span class="transform-addr">2001:db8:<span class="zeros">0:0:0:0:0:0</span></span>
+    </div>
+    <div class="transform-arrow">&darr;</div>
+    <div class="transform-row">
+      <span class="transform-addr" style="color:var(--green);font-weight:700">2001:db8::</span>
+    </div>
+  </div>
+
+  <div class="transform-box">
+    <div class="wt-step-label">:: am Anfang (7 Null-Hextets)</div>
+    <div class="transform-row">
+      <span class="transform-addr"><span class="zeros">0:0:0:0:0:0:0</span>:1</span>
+    </div>
+    <div class="transform-arrow">&darr;</div>
+    <div class="transform-row">
+      <span class="transform-addr" style="color:var(--green);font-weight:700">::1</span>
+    </div>
+  </div>
+
+  <div class="transform-box">
+    <div class="wt-step-label">:: in der Mitte (4 Null-Hextets)</div>
+    <div class="transform-row">
+      <span class="transform-addr">fe80:<span class="zeros">0:0:0</span>:204:61ff:fe9d:f156</span>
+    </div>
+    <div class="transform-arrow">&darr;</div>
+    <div class="transform-row">
+      <span class="transform-addr" style="color:var(--green);font-weight:700">fe80::204:61ff:fe9d:f156</span>
+    </div>
+  </div>
+
+  <div class="transform-box">
+    <div class="wt-step-label">Zwei Null-Folgen &mdash; die erste (l&auml;ngste/gleich lange) wird ersetzt</div>
+    <div class="transform-row">
+      <span class="transform-addr">2001:db8:<span class="zeros" style="font-weight:700;text-decoration:underline">0:0:0</span>:ff00:<span class="zeros">0:0</span></span>
+    </div>
+    <div class="transform-arrow">&darr;</div>
+    <div class="transform-row">
+      <span class="transform-addr" style="color:var(--green);font-weight:700">2001:db8::ff00:0:0</span>
+    </div>
+    <div style="font-size:.78rem;color:var(--dim);margin-top:6px">Die erste Folge (3 Hextets) ist l&auml;nger als die zweite (2 Hextets) &rarr; erste wird ersetzt.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ Section 4 ═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Walkthrough</div>
+  <h2>Komprimierung Schritt f&uuml;r Schritt</h2>
+  <p class="section-desc">Drei vollst&auml;ndige Beispiele von der Langform zur K&uuml;rzestform.</p>
+
+  <!-- Example 1 -->
+  <div class="walkthrough">
+    <div class="walkthrough-title">Beispiel 1</div>
+    <div class="wt-step">
+      <div class="wt-step-label">Vollst&auml;ndige Adresse</div>
+      <div class="wt-step-addr">2001:0db8:0000:0000:0000:0000:0000:0001</div>
+    </div>
+    <div class="wt-step">
+      <div class="wt-step-label">Schritt 1 &mdash; F&uuml;hrende Nullen entfernen (Regel 1)</div>
+      <div class="wt-step-addr">2001:<span class="kept">db8</span>:<span class="kept">0</span>:<span class="kept">0</span>:<span class="kept">0</span>:<span class="kept">0</span>:<span class="kept">0</span>:<span class="kept">1</span></div>
+      <div class="wt-step-note">0db8&rarr;db8, 0000&rarr;0 (6&times;), 0001&rarr;1</div>
+    </div>
+    <div class="wt-step">
+      <div class="wt-step-label">Schritt 2 &mdash; Null-Folgen identifizieren</div>
+      <div class="wt-step-addr">2001:db8:<span class="zeros" style="font-weight:700;text-decoration:underline">0:0:0:0:0</span>:1</div>
+      <div class="wt-step-note">Eine Folge von 5 aufeinanderfolgenden Null-Hextets (Position 3&ndash;7)</div>
+    </div>
+    <div class="wt-step">
+      <div class="wt-step-label">Schritt 3 &mdash; L&auml;ngste Folge durch :: ersetzen (Regel 2)</div>
+      <div class="wt-step-addr">2001:db8:<span class="replaced">::</span>1</div>
+    </div>
+    <div class="wt-result">
+      <div class="wt-step-label">Ergebnis</div>
+      <div class="wt-step-addr">2001:db8::1</div>
+    </div>
+  </div>
+
+  <!-- Example 2 -->
+  <div class="walkthrough">
+    <div class="walkthrough-title">Beispiel 2</div>
+    <div class="wt-step">
+      <div class="wt-step-label">Vollst&auml;ndige Adresse</div>
+      <div class="wt-step-addr">fe80:0000:0000:0000:0204:61ff:fe9d:f156</div>
+    </div>
+    <div class="wt-step">
+      <div class="wt-step-label">Schritt 1 &mdash; F&uuml;hrende Nullen entfernen (Regel 1)</div>
+      <div class="wt-step-addr">fe80:<span class="kept">0</span>:<span class="kept">0</span>:<span class="kept">0</span>:<span class="kept">204</span>:61ff:fe9d:f156</div>
+      <div class="wt-step-note">0000&rarr;0 (3&times;), 0204&rarr;204</div>
+    </div>
+    <div class="wt-step">
+      <div class="wt-step-label">Schritt 2 &mdash; Null-Folgen identifizieren</div>
+      <div class="wt-step-addr">fe80:<span class="zeros" style="font-weight:700;text-decoration:underline">0:0:0</span>:204:61ff:fe9d:f156</div>
+      <div class="wt-step-note">Eine Folge von 3 Null-Hextets (Position 2&ndash;4)</div>
+    </div>
+    <div class="wt-step">
+      <div class="wt-step-label">Schritt 3 &mdash; L&auml;ngste Folge durch :: ersetzen (Regel 2)</div>
+      <div class="wt-step-addr">fe80:<span class="replaced">::</span>204:61ff:fe9d:f156</div>
+    </div>
+    <div class="wt-result">
+      <div class="wt-step-label">Ergebnis</div>
+      <div class="wt-step-addr">fe80::204:61ff:fe9d:f156</div>
+    </div>
+  </div>
+
+  <!-- Example 3 -->
+  <div class="walkthrough">
+    <div class="walkthrough-title">Beispiel 3 &mdash; Zwei Null-Folgen</div>
+    <div class="wt-step">
+      <div class="wt-step-label">Vollst&auml;ndige Adresse</div>
+      <div class="wt-step-addr">2001:0db8:0000:0001:0000:0000:0000:0001</div>
+    </div>
+    <div class="wt-step">
+      <div class="wt-step-label">Schritt 1 &mdash; F&uuml;hrende Nullen entfernen (Regel 1)</div>
+      <div class="wt-step-addr">2001:<span class="kept">db8</span>:<span class="kept">0</span>:<span class="kept">1</span>:<span class="kept">0</span>:<span class="kept">0</span>:<span class="kept">0</span>:<span class="kept">1</span></div>
+      <div class="wt-step-note">0db8&rarr;db8, 0000&rarr;0, 0001&rarr;1, 0000&rarr;0 (3&times;), 0001&rarr;1</div>
+    </div>
+    <div class="wt-step">
+      <div class="wt-step-label">Schritt 2 &mdash; Null-Folgen identifizieren</div>
+      <div class="wt-step-addr">2001:db8:<span class="zeros">0</span>:1:<span class="zeros" style="font-weight:700;text-decoration:underline">0:0:0</span>:1</div>
+      <div class="wt-step-note">Folge A: 1 Null-Hextet (Position 3) &mdash; Folge B: 3 Null-Hextets (Position 5&ndash;7) &rarr; Folge B ist l&auml;nger!</div>
+    </div>
+    <div class="wt-step">
+      <div class="wt-step-label">Schritt 3 &mdash; L&auml;ngste Folge durch :: ersetzen (Regel 2)</div>
+      <div class="wt-step-addr">2001:db8:<span style="color:var(--dim)">0</span>:1<span class="replaced">::</span>1</div>
+      <div class="wt-step-note">Das einzelne 0-Hextet (Folge A) bleibt stehen &mdash; :: darf nur einmal verwendet werden!</div>
+    </div>
+    <div class="wt-result">
+      <div class="wt-step-label">Ergebnis</div>
+      <div class="wt-step-addr">2001:db8:0:1::1</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ Section 5 ═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">R&uuml;ckweg</div>
+  <h2>Expandierung &mdash; Von kurz zu lang</h2>
+  <p class="section-desc">Die Umkehrung: Aus der Kurzform die vollst&auml;ndige Adresse rekonstruieren.</p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <p><strong><code>::</code> lokalisieren und fehlende Hextets berechnen</strong></p>
+      <p>Eine vollst&auml;ndige IPv6-Adresse hat immer <strong>8 Hextets</strong>. Z&auml;hle die vorhandenen Hextets (links und rechts von <code>::</code>) und berechne:</p>
+      <div class="info-box">
+        <strong>Fehlende Hextets = 8 &minus; vorhandene Hextets</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <p><strong><code>::</code> durch die korrekte Anzahl von <code>0000</code>-Hextets ersetzen</strong></p>
+      <p>F&uuml;ge an der Stelle von <code>::</code> so viele <code>0000</code>-Hextets ein, bis insgesamt 8 Gruppen vorhanden sind.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <p><strong>Jedes Hextet auf 4 Stellen mit f&uuml;hrenden Nullen auff&uuml;llen</strong></p>
+      <p>Jedes Hextet muss exakt 4 Hexadezimalziffern haben. K&uuml;rzere Hextets werden links mit Nullen aufgef&uuml;llt.</p>
+    </div>
+  </div>
+
+  <p><strong>Vollst&auml;ndiges Beispiel:</strong></p>
+
+  <div class="walkthrough">
+    <div class="walkthrough-title">Expandierung von 2001:db8::1</div>
+    <div class="wt-step">
+      <div class="wt-step-label">Ausgangspunkt</div>
+      <div class="wt-step-addr">2001:db8::1</div>
+    </div>
+    <div class="wt-step">
+      <div class="wt-step-label">Schritt 1 &mdash; :: lokalisieren, Hextets z&auml;hlen</div>
+      <div class="wt-step-addr">Links von :: &rarr; <span class="kept">2001, db8</span> (2 St&uuml;ck)<br>Rechts von :: &rarr; <span class="kept">1</span> (1 St&uuml;ck)</div>
+      <div class="wt-step-note">Vorhanden: 2 + 1 = 3 Hextets &rarr; Fehlend: 8 &minus; 3 = 5 Null-Hextets</div>
+    </div>
+    <div class="wt-step">
+      <div class="wt-step-label">Schritt 2 &mdash; :: durch 5&times; 0000 ersetzen</div>
+      <div class="wt-step-addr">2001:db8:<span class="zeros">0000:0000:0000:0000:0000</span>:1</div>
+    </div>
+    <div class="wt-step">
+      <div class="wt-step-label">Schritt 3 &mdash; Alle Hextets auf 4 Stellen auff&uuml;llen</div>
+      <div class="wt-step-addr">2001:0db8:0000:0000:0000:0000:0000:0001</div>
+      <div class="wt-step-note">db8&rarr;0db8, 1&rarr;0001</div>
+    </div>
+    <div class="wt-result">
+      <div class="wt-step-label">Ergebnis</div>
+      <div class="wt-step-addr">2001:0db8:0000:0000:0000:0000:0000:0001</div>
+    </div>
+  </div>
+
+  <div class="walkthrough">
+    <div class="walkthrough-title">Expandierung von fe80::204:61ff:fe9d:f156</div>
+    <div class="wt-step">
+      <div class="wt-step-label">Ausgangspunkt</div>
+      <div class="wt-step-addr">fe80::204:61ff:fe9d:f156</div>
+    </div>
+    <div class="wt-step">
+      <div class="wt-step-label">Schritt 1 &mdash; :: lokalisieren, Hextets z&auml;hlen</div>
+      <div class="wt-step-addr">Links: <span class="kept">fe80</span> (1) &mdash; Rechts: <span class="kept">204, 61ff, fe9d, f156</span> (4)</div>
+      <div class="wt-step-note">Vorhanden: 1 + 4 = 5 &rarr; Fehlend: 8 &minus; 5 = 3 Null-Hextets</div>
+    </div>
+    <div class="wt-step">
+      <div class="wt-step-label">Schritt 2 &mdash; :: durch 3&times; 0000 ersetzen</div>
+      <div class="wt-step-addr">fe80:<span class="zeros">0000:0000:0000</span>:204:61ff:fe9d:f156</div>
+    </div>
+    <div class="wt-step">
+      <div class="wt-step-label">Schritt 3 &mdash; Alle Hextets auf 4 Stellen auff&uuml;llen</div>
+      <div class="wt-step-addr">fe80:0000:0000:0000:0204:61ff:fe9d:f156</div>
+      <div class="wt-step-note">204&rarr;0204</div>
+    </div>
+    <div class="wt-result">
+      <div class="wt-step-label">Ergebnis</div>
+      <div class="wt-step-addr">fe80:0000:0000:0000:0204:61ff:fe9d:f156</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ Section 6 ═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Achtung</div>
+  <h2>H&auml;ufige Fehler</h2>
+  <p class="section-desc">Diese Fehler kosten in der Klausur Punkte &mdash; vermeide sie!</p>
+
+  <div class="error-item">
+    <div class="error-icon">&times;</div>
+    <div class="error-text">
+      <strong><code>::</code> zweimal verwenden</strong><br>
+      <code class="wrong-example">2001::db8::1</code> &mdash; Nicht erlaubt! Man kann nicht wissen, wie viele Null-Hextets an welcher Stelle fehlen.<br>
+      <code class="right-example">2001:db8::1</code> &mdash; Korrekt.
+    </div>
+  </div>
+
+  <div class="error-item">
+    <div class="error-icon">&times;</div>
+    <div class="error-text">
+      <strong>Hextet komplett entfernen statt auf 0 k&uuml;rzen</strong><br>
+      <code>0000</code> wird zu <code class="right-example">0</code> &mdash; nicht zu nichts. Pro Hextet muss mindestens eine Ziffer stehen bleiben (au&szlig;er es wird durch <code>::</code> ersetzt).
+    </div>
+  </div>
+
+  <div class="error-item">
+    <div class="error-icon">&times;</div>
+    <div class="error-text">
+      <strong>Hextets beim Expandieren falsch z&auml;hlen</strong><br>
+      <code class="wrong-example">2001:db8::1</code> hat 3 sichtbare Hextets, nicht 2! Also fehlen 8 &minus; 3 = 5 Null-Hextets. Tipp: Z&auml;hle die Doppelpunkte sorgf&auml;ltig.
+    </div>
+  </div>
+
+  <div class="error-item">
+    <div class="error-icon">&times;</div>
+    <div class="error-text">
+      <strong>Nicht die l&auml;ngste Null-Folge f&uuml;r <code>::</code> w&auml;hlen</strong><br>
+      Bei <code>2001:0:0:1:0:0:0:1</code> muss die <strong>l&auml;ngere</strong> Folge (3 Nullen, Position 5&ndash;7) gew&auml;hlt werden:<br>
+      <code class="wrong-example">2001::1:0:0:0:1</code> &mdash; Falsch (2er-Folge ersetzt)<br>
+      <code class="right-example">2001:0:0:1::1</code> &mdash; Richtig (3er-Folge ersetzt)
+    </div>
+  </div>
+
+  <div class="error-item">
+    <div class="error-icon">&times;</div>
+    <div class="error-text">
+      <strong>Bei gleich langen Folgen die falsche w&auml;hlen</strong><br>
+      Wenn zwei Folgen gleich lang sind, wird die <strong>erste</strong> (linke) ersetzt:<br>
+      <code>2001:0:0:ff:0:0:1:1</code> &rarr; <code class="right-example">2001::ff:0:0:1:1</code> (nicht <code class="wrong-example">2001:0:0:ff::1:1</code>)
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ Section 7 ═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Pr&uuml;fungstipps</div>
+  <h2>Tipps f&uuml;r die Klausur</h2>
+  <p class="section-desc">Damit in der Pr&uuml;fung nichts schiefgeht.</p>
+
+  <div class="tip-box">
+    <strong>Formel zum Z&auml;hlen:</strong> Vorhandene Hextets links und rechts von <code>::</code> z&auml;hlen. Fehlende = <code>8 &minus; vorhandene</code>. So wei&szlig;t du genau, wie viele Null-Hextets eingesetzt werden m&uuml;ssen.
+  </div>
+
+  <div class="tip-box">
+    <strong>&Uuml;be beide Richtungen:</strong> Komprimieren und Expandieren sind gleich wichtig. In der Klausur werden beide Aufgabentypen vorkommen. Wer nur eine Richtung beherrscht, verschenkt Punkte.
+  </div>
+
+  <div class="tip-box">
+    <strong>Kontrollschritt:</strong> Nach dem Komprimieren: Expandiere dein Ergebnis im Kopf zur&uuml;ck und pr&uuml;fe, ob dieselbe Langform herauskommt. Wenn ja, ist alles richtig.
+  </div>
+
+  <div class="tip-box">
+    <strong>Systematisch vorgehen:</strong> Immer erst Regel 1, dann Regel 2. Nicht beides gleichzeitig machen &mdash; das f&uuml;hrt zu Fehlern.
+  </div>
+
+  <div class="btn-row">
+    <a class="btn btn-primary" href="02_komprimierung.html">Zur &Uuml;bung &rarr;</a>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

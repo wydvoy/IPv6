@@ -36,6 +36,15 @@ h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-
 .badge-blue{background:rgba(34,211,238,.1);color:var(--accent);border:1px solid rgba(34,211,238,.2)}
 .badge-purple{background:rgba(167,139,250,.1);color:var(--accent2);border:1px solid rgba(167,139,250,.2)}
 .badge-green{background:rgba(52,211,153,.1);color:var(--green);border:1px solid rgba(52,211,153,.2)}
+.section-divider{text-align:center;margin:60px 0 40px;position:relative}
+.section-divider::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--border)}
+.section-divider span{background:var(--bg);padding:0 20px;position:relative;font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.card-explain{border-color:rgba(167,139,250,.2)}
+.card-explain:hover{border-color:var(--accent2);box-shadow:0 8px 32px rgba(167,139,250,.08)}
+.card-explain:hover::before{background:linear-gradient(90deg,transparent,var(--accent2),transparent)}
+.card-explain .card-num{color:var(--accent2)}
+.card-explain:hover .card-arrow{color:var(--accent2)}
+.card-explain .badge{background:rgba(167,139,250,.1);color:var(--accent2);border:1px solid rgba(167,139,250,.2)}
 .footer{text-align:center;margin-top:80px;color:var(--dim);font-size:.8rem;font-family:'JetBrains Mono',monospace}
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 .card{animation:fadeUp .5s ease both}
@@ -44,6 +53,11 @@ h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-
 .card:nth-child(3){animation-delay:.3s}
 .card:nth-child(4){animation-delay:.4s}
 .card:nth-child(5){animation-delay:.5s}
+.card:nth-child(6){animation-delay:.15s}
+.card:nth-child(7){animation-delay:.25s}
+.card:nth-child(8){animation-delay:.35s}
+.card:nth-child(9){animation-delay:.45s}
+.card:nth-child(10){animation-delay:.55s}
 </style>
 </head>
 <body>
@@ -102,7 +116,55 @@ h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-
       <div class="card-arrow">→</div>
     </a>
   </div>
-  <div class="footer">IPv6 Klausurvorbereitung · IT-Systeme / Netzwerktechnik · 100 Punkte gesamt</div>
+  <div class="section-divider"><span>Erkl&auml;rungen</span></div>
+  <div class="cards">
+    <a class="card card-explain" href="erkl_01_adresstypen.html">
+      <div class="card-num">01</div>
+      <div class="card-body">
+        <h2>Adresstypen & Pr&auml;fixe verstehen</h2>
+        <p>Was sind Global Unicast, Link-Local, Multicast, Unique Local und Dokumentationsadressen?</p>
+        <span class="badge">Erkl&auml;rung</span>
+      </div>
+      <div class="card-arrow">&rarr;</div>
+    </a>
+    <a class="card card-explain" href="erkl_02_komprimierung.html">
+      <div class="card-num">02</div>
+      <div class="card-body">
+        <h2>Komprimierung & Expandierung verstehen</h2>
+        <p>Die zwei Regeln zur K&uuml;rzung und das Zur&uuml;ckf&uuml;hren in die Langform &ndash; Schritt f&uuml;r Schritt.</p>
+        <span class="badge">Erkl&auml;rung</span>
+      </div>
+      <div class="card-arrow">&rarr;</div>
+    </a>
+    <a class="card card-explain" href="erkl_03_subnetting.html">
+      <div class="card-num">03</div>
+      <div class="card-body">
+        <h2>Netzwerkpr&auml;fix & Subnetting verstehen</h2>
+        <p>Wie Pr&auml;fix und Interface ID zusammenspielen und wie man Subnetze berechnet.</p>
+        <span class="badge">Erkl&auml;rung</span>
+      </div>
+      <div class="card-arrow">&rarr;</div>
+    </a>
+    <a class="card card-explain" href="erkl_04_eui64.html">
+      <div class="card-num">04</div>
+      <div class="card-body">
+        <h2>EUI-64 verstehen</h2>
+        <p>MAC-Adresse zur Interface ID &ndash; alle 4 Schritte ausf&uuml;hrlich erkl&auml;rt mit Beispielen.</p>
+        <span class="badge">Erkl&auml;rung</span>
+      </div>
+      <div class="card-arrow">&rarr;</div>
+    </a>
+    <a class="card card-explain" href="erkl_05_begriffe.html">
+      <div class="card-num">05</div>
+      <div class="card-body">
+        <h2>Begriffe & Technologien verstehen</h2>
+        <p>Dual Stack, Tunneling, NAT64, SLAAC, IPv6-Header und mehr &ndash; verst&auml;ndlich erkl&auml;rt.</p>
+        <span class="badge">Erkl&auml;rung</span>
+      </div>
+      <div class="card-arrow">&rarr;</div>
+    </a>
+  </div>
+  <div class="footer">IPv6 Klausurvorbereitung &middot; IT-Systeme / Netzwerktechnik &middot; 100 Punkte gesamt</div>
 </div>
 </body>
 </html>

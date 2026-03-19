@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Erkl. 03 – Netzwerkpräfix & Subnetting</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#2a3550;--text:#e2e8f0;--dim:#64748b;--accent:#22d3ee;--accent2:#a78bfa;--green:#34d399;--red:#f87171;--orange:#fbbf24}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.7}
+.noise{position:fixed;top:0;left:0;width:100%;height:100%;opacity:.03;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.container{max-width:800px;margin:0 auto;padding:40px 24px;position:relative;z-index:1}
+nav{display:flex;align-items:center;gap:16px;margin-bottom:48px}
+nav a{color:var(--dim);text-decoration:none;font-size:.9rem;transition:color .2s}nav a:hover{color:var(--accent)}
+.nav-sep{color:var(--border)}.nav-current{color:var(--text);font-weight:500}
+h1{font-size:1.8rem;font-weight:900;margin-bottom:8px}
+h1 span{color:var(--accent)}
+.subtitle{color:var(--dim);margin-bottom:40px;font-size:.95rem}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px}
+.section-title{font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.section-title.purple{color:var(--accent2)}
+.section h2{font-size:1.2rem;font-weight:700;margin-bottom:12px}
+.section p{font-size:.92rem;color:var(--text);margin-bottom:12px}
+.section p.dim{color:var(--dim);font-size:.85rem}
+.section ul{list-style:none;padding:0;margin-bottom:16px}
+.section ul li{position:relative;padding-left:20px;margin-bottom:8px;font-size:.92rem}
+.section ul li::before{content:'';position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.section ul.purple-bullets li::before{background:var(--accent2)}
+.section ol{padding-left:24px;margin-bottom:16px}
+.section ol li{margin-bottom:8px;font-size:.92rem}
+
+/* Address visual display */
+.addr-visual{font-family:'JetBrains Mono',monospace;font-size:clamp(.7rem,2.5vw,1rem);padding:20px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;margin:20px 0;text-align:center;line-height:2}
+.addr-visual .prefix{color:var(--accent);border-bottom:2px solid rgba(34,211,238,.4);padding-bottom:2px}
+.addr-visual .iid{color:var(--accent2);border-bottom:2px solid rgba(167,139,250,.4);padding-bottom:2px}
+.addr-visual .subnet-bits{color:var(--green);border-bottom:2px solid rgba(52,211,153,.4);padding-bottom:2px}
+.addr-visual .label-row{display:flex;justify-content:center;gap:8px;margin-top:12px;font-size:.75rem;flex-wrap:wrap}
+.addr-visual .label-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:6px;font-size:.72rem;letter-spacing:.03em}
+.label-tag.cyan{background:rgba(34,211,238,.1);color:var(--accent);border:1px solid rgba(34,211,238,.2)}
+.label-tag.purple{background:rgba(167,139,250,.1);color:var(--accent2);border:1px solid rgba(167,139,250,.2)}
+.label-tag.green{background:rgba(52,211,153,.1);color:var(--green);border:1px solid rgba(52,211,153,.2)}
+
+/* Bit bar visualization */
+.bit-bar{display:flex;border-radius:8px;overflow:hidden;margin:16px 0;height:36px;font-family:'JetBrains Mono',monospace;font-size:.7rem;font-weight:700}
+.bit-bar .seg{display:flex;align-items:center;justify-content:center;color:var(--bg);transition:all .3s}
+.bit-bar .seg.prefix-seg{background:var(--accent)}
+.bit-bar .seg.subnet-seg{background:var(--green)}
+.bit-bar .seg.iid-seg{background:var(--accent2)}
+.bit-bar .seg.host-seg{background:var(--accent2);opacity:.6}
+.bit-bar-labels{display:flex;margin-bottom:16px;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--dim)}
+.bit-bar-labels span{text-align:center}
+
+/* Info box */
+.info-box{background:rgba(34,211,238,.06);border:1px solid rgba(34,211,238,.15);border-radius:10px;padding:16px 20px;margin:16px 0;font-size:.88rem;line-height:1.7}
+.info-box.green{background:rgba(52,211,153,.06);border-color:rgba(52,211,153,.15)}
+.info-box.purple{background:rgba(167,139,250,.06);border-color:rgba(167,139,250,.15)}
+.info-box.orange{background:rgba(251,191,36,.06);border-color:rgba(251,191,36,.15)}
+.info-box code{font-family:'JetBrains Mono',monospace;background:rgba(34,211,238,.12);padding:2px 6px;border-radius:4px;font-size:.82rem;color:var(--accent)}
+.info-box.green code{background:rgba(52,211,153,.12);color:var(--green)}
+.info-box.purple code{background:rgba(167,139,250,.12);color:var(--accent2)}
+.info-box.orange code{background:rgba(251,191,36,.12);color:var(--orange)}
+.info-box strong{color:var(--accent)}
+.info-box.green strong{color:var(--green)}
+.info-box.purple strong{color:var(--accent2)}
+.info-box.orange strong{color:var(--orange)}
+
+/* Formula box */
+.formula-box{font-family:'JetBrains Mono',monospace;background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(167,139,250,.08));border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin:20px 0;text-align:center;font-size:1rem;letter-spacing:.03em}
+.formula-box .formula{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+.formula-box .formula .cyan{color:var(--accent)}
+.formula-box .formula .purple{color:var(--accent2)}
+.formula-box .formula .green{color:var(--green)}
+.formula-box .note{font-size:.78rem;color:var(--dim);font-weight:400}
+
+/* Table */
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.85rem}
+.data-table th{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);padding:10px 14px;text-align:left;border-bottom:2px solid var(--border);background:var(--surface2)}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border)}
+.data-table tr:last-child td{border-bottom:none}
+.data-table code{font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--accent);background:rgba(34,211,238,.08);padding:2px 6px;border-radius:4px}
+.data-table .dim{color:var(--dim)}
+
+/* Step-by-step */
+.step{display:flex;gap:16px;margin-bottom:16px;align-items:flex-start}
+.step-num{font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:700;color:var(--bg);background:var(--accent);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-content{font-size:.92rem}
+.step-content code{font-family:'JetBrains Mono',monospace;background:rgba(34,211,238,.1);padding:2px 6px;border-radius:4px;font-size:.82rem;color:var(--accent)}
+.step-content .result{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--green);margin-top:4px}
+
+/* Subnet list */
+.subnet-list{font-family:'JetBrains Mono',monospace;font-size:.85rem;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0;line-height:2}
+.subnet-list .entry{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px}
+.subnet-list .entry .label{color:var(--dim);min-width:140px}
+.subnet-list .entry .addr{color:var(--accent)}
+.subnet-list .dots{color:var(--dim);text-align:center;padding:4px 0}
+
+/* Analogy box */
+.analogy{background:var(--surface2);border-left:3px solid var(--orange);border-radius:0 10px 10px 0;padding:16px 20px;margin:16px 0;font-size:.88rem}
+.analogy strong{color:var(--orange)}
+
+/* CTA link */
+.cta-row{display:flex;gap:12px;margin-top:32px;flex-wrap:wrap}
+.cta-link{display:inline-flex;align-items:center;gap:8px;font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:600;padding:12px 24px;border-radius:10px;text-decoration:none;transition:all .2s}
+.cta-link.primary{background:var(--accent);color:var(--bg)}.cta-link.primary:hover{opacity:.85;transform:translateY(-1px)}
+.cta-link.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.cta-link.secondary:hover{border-color:var(--accent)}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+.section:nth-child(1){animation-delay:.05s}
+.section:nth-child(2){animation-delay:.1s}
+.section:nth-child(3){animation-delay:.15s}
+.section:nth-child(4){animation-delay:.2s}
+.section:nth-child(5){animation-delay:.25s}
+.section:nth-child(6){animation-delay:.3s}
+.section:nth-child(7){animation-delay:.35s}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="container">
+<nav>
+  <a href="index.html">&larr; &Uuml;bersicht</a><span class="nav-sep">/</span><span class="nav-current">Erkl&auml;rung: Subnetting</span>
+</nav>
+<h1>Netzwerkpr&auml;fix <span>&amp; Subnetting</span></h1>
+<p class="subtitle">Erkl&auml;rung &middot; Schritt f&uuml;r Schritt zum Verst&auml;ndnis</p>
+
+<!-- ==================== SECTION 1 ==================== -->
+<div class="section">
+  <div class="section-title">Abschnitt 1</div>
+  <h2>Aufbau einer IPv6-Adresse</h2>
+  <p>Eine IPv6-Adresse ist <strong>128 Bits</strong> lang. Sie besteht aus genau zwei Teilen:</p>
+  <ul>
+    <li><strong style="color:var(--accent)">Netzwerkpr&auml;fix (Network Prefix)</strong> &mdash; identifiziert das Netzwerk, in dem sich das Ger&auml;t befindet.</li>
+    <li class="purple-iid"><strong style="color:var(--accent2)">Interface Identifier (IID)</strong> &mdash; identifiziert das einzelne Ger&auml;t (Host) innerhalb dieses Netzwerks.</li>
+  </ul>
+  <p>Wo genau die Grenze zwischen Pr&auml;fix und IID liegt, bestimmt die <strong>Pr&auml;fixl&auml;nge</strong>. Sie wird als Zahl nach einem Schr&auml;gstrich geschrieben, z.&nbsp;B. <code style="font-family:'JetBrains Mono',monospace;background:rgba(34,211,238,.1);padding:2px 6px;border-radius:4px;font-size:.85rem;color:var(--accent)">/64</code>.</p>
+
+  <div class="addr-visual">
+    <div>
+      <span class="prefix">2001:0db8:abcd:0012</span>:<span class="iid">0000:0000:0000:0001</span><span style="color:var(--dim)"> /64</span>
+    </div>
+    <div class="label-row">
+      <span class="label-tag cyan">Netzwerkpr&auml;fix (64 Bits)</span>
+      <span class="label-tag purple">Interface ID (64 Bits)</span>
+    </div>
+  </div>
+
+  <!-- Bit bar -->
+  <div class="bit-bar">
+    <div class="seg prefix-seg" style="flex:64">Pr&auml;fix &middot; 64 Bits</div>
+    <div class="seg iid-seg" style="flex:64">Interface ID &middot; 64 Bits</div>
+  </div>
+
+  <div class="info-box">
+    <strong>/64</strong> ist der Standardschnitt f&uuml;r Endnutzer-Netzwerke (LANs). Die ersten 64 Bits geh&ouml;ren zum Netzwerk, die letzten 64 Bits identifizieren den Host.
+  </div>
+</div>
+
+<!-- ==================== SECTION 2 ==================== -->
+<div class="section">
+  <div class="section-title">Abschnitt 2</div>
+  <h2>Pr&auml;fixl&auml;nge verstehen</h2>
+  <p>Die Pr&auml;fixl&auml;nge gibt an, <strong>wie viele Bits</strong> von links gez&auml;hlt zum Netzwerkpr&auml;fix geh&ouml;ren:</p>
+  <ul>
+    <li><strong>/48</strong> = die ersten 48 Bits sind der Netzwerkpr&auml;fix</li>
+    <li><strong>/64</strong> = die ersten 64 Bits sind der Netzwerkpr&auml;fix</li>
+    <li><strong>/128</strong> = alle 128 Bits sind fixiert &rarr; eine einzige Adresse</li>
+  </ul>
+  <p><strong>Faustregel:</strong> Je gr&ouml;&szlig;er die Zahl nach dem <code style="font-family:'JetBrains Mono',monospace;background:rgba(34,211,238,.1);padding:2px 6px;border-radius:4px;font-size:.85rem;color:var(--accent)">/</code>, desto spezifischer das Netzwerk &mdash; weniger Hosts, aber mehr m&ouml;gliche Subnetze.</p>
+
+  <div class="analogy">
+    <strong>Analogie:</strong> Stell dir eine Postleitzahl vor. &bdquo;0&ldquo; ist ganz Deutschland, &bdquo;04&ldquo; ist Leipzig und Umgebung, &bdquo;04103&ldquo; ist ein einzelner Stadtteil. Je mehr Ziffern, desto genauer der Bereich &mdash; genauso funktioniert die Pr&auml;fixl&auml;nge.
+  </div>
+
+  <!-- Visual: /48 vs /64 vs /128 -->
+  <p class="dim" style="margin-top:20px;margin-bottom:8px;font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.1em">/48 &mdash; GROBMASCHIG</p>
+  <div class="bit-bar">
+    <div class="seg prefix-seg" style="flex:48">Pr&auml;fix &middot; 48</div>
+    <div class="seg host-seg" style="flex:80">Host-Bereich &middot; 80 Bits</div>
+  </div>
+
+  <p class="dim" style="margin-bottom:8px;font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.1em">/64 &mdash; STANDARD</p>
+  <div class="bit-bar">
+    <div class="seg prefix-seg" style="flex:64">Pr&auml;fix &middot; 64</div>
+    <div class="seg iid-seg" style="flex:64">IID &middot; 64 Bits</div>
+  </div>
+
+  <p class="dim" style="margin-bottom:8px;font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.1em">/128 &mdash; EINZELNE ADRESSE</p>
+  <div class="bit-bar">
+    <div class="seg prefix-seg" style="flex:128">Pr&auml;fix &middot; 128 Bits &rarr; ein einziger Host</div>
+  </div>
+
+  <!-- Tabelle: G&auml;ngige Pr&auml;fixl&auml;ngen -->
+  <h2 style="margin-top:24px">G&auml;ngige Pr&auml;fixl&auml;ngen</h2>
+  <table class="data-table">
+    <thead>
+      <tr><th>Pr&auml;fix</th><th>Verwendung</th><th>Host-Bits</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>/32</code></td><td>ISP-Zuweisung von der RIR</td><td class="dim">96</td></tr>
+      <tr><td><code>/48</code></td><td>Typische Kundenzuweisung</td><td class="dim">80</td></tr>
+      <tr><td><code>/56</code></td><td>Kleinere Kundenzuweisung</td><td class="dim">72</td></tr>
+      <tr><td><code>/64</code></td><td>Einzelnes Subnetz (Standard f&uuml;r LANs)</td><td class="dim">64</td></tr>
+      <tr><td><code>/128</code></td><td>Einzelner Host (Loopback, Point-to-Point)</td><td class="dim">0</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ==================== SECTION 3 ==================== -->
+<div class="section">
+  <div class="section-title" style="color:var(--green)">Abschnitt 3</div>
+  <h2>Subnetting &mdash; Subnetze berechnen</h2>
+  <p>Subnetting bedeutet: Einen gro&szlig;en Adressblock in kleinere Subnetze aufteilen. Die zentrale Formel:</p>
+
+  <div class="formula-box">
+    <div class="formula"><span class="green">Anzahl Subnetze</span> = 2<sup>(<span class="cyan">Zielpr&auml;fix</span> &minus; <span class="purple">Ausgangspr&auml;fix</span>)</sup></div>
+    <div class="note">z.&nbsp;B. /48 &rarr; /64: 2^(64 &minus; 48) = 2^16 = 65.536 Subnetze</div>
+  </div>
+
+  <p>Die Bits zwischen dem Ausgangspr&auml;fix und dem Zielpr&auml;fix (/64) sind die <strong style="color:var(--green)">&bdquo;Subnet-Bits&ldquo;</strong>. Jedes dieser Subnetze erh&auml;lt seinen eigenen 64-Bit-Interface-ID-Bereich.</p>
+
+  <!-- Bit bar mit 3 Segmenten -->
+  <p class="dim" style="margin-top:16px;margin-bottom:8px;font-family:'JetBrains Mono',monospace;font-size:.75rem">Beispiel: /48 &rarr; /64 Subnetze</p>
+  <div class="bit-bar">
+    <div class="seg prefix-seg" style="flex:48">Pr&auml;fix &middot; 48</div>
+    <div class="seg subnet-seg" style="flex:16">Subnet &middot; 16</div>
+    <div class="seg iid-seg" style="flex:64">IID &middot; 64</div>
+  </div>
+  <div style="display:flex;justify-content:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+    <span class="label-tag cyan">Netzwerkpr&auml;fix (48 Bit)</span>
+    <span class="label-tag green">Subnet-Bits (16 Bit)</span>
+    <span class="label-tag purple">Interface ID (64 Bit)</span>
+  </div>
+
+  <!-- Schritt-f&uuml;r-Schritt-Beispiel -->
+  <h2 style="margin-top:24px">Schritt-f&uuml;r-Schritt-Beispiel</h2>
+  <div class="info-box">
+    <strong>Gegeben:</strong> <code>2001:db8:cafe::/48</code>
+  </div>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      Das Pr&auml;fix ist <strong>48 Bits</strong> lang. F&uuml;r /64-Subnetze bleiben:<br>
+      <code>64 &minus; 48 = 16</code> Subnet-Bits
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      Anzahl Subnetze berechnen:<br>
+      <code>2^16 = 65.536</code> m&ouml;gliche /64-Subnetze
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      Die 16 Subnet-Bits bilden das <strong>4. Hextet</strong> (Positionen 49&ndash;64). Indem wir dieses Hextet von <code>0000</code> bis <code>ffff</code> durchz&auml;hlen, erhalten wir alle Subnetze:
+    </div>
+  </div>
+
+  <div class="subnet-list">
+    <div class="entry"><span class="label">1. Subnetz:</span> <span class="addr">2001:db8:cafe:<strong style="color:var(--green)">0000</strong>::/64</span></div>
+    <div class="entry"><span class="label">2. Subnetz:</span> <span class="addr">2001:db8:cafe:<strong style="color:var(--green)">0001</strong>::/64</span></div>
+    <div class="entry"><span class="label">3. Subnetz:</span> <span class="addr">2001:db8:cafe:<strong style="color:var(--green)">0002</strong>::/64</span></div>
+    <div class="dots">&middot;&middot;&middot;</div>
+    <div class="entry"><span class="label">Letztes Subnetz:</span> <span class="addr">2001:db8:cafe:<strong style="color:var(--green)">ffff</strong>::/64</span></div>
+  </div>
+</div>
+
+<!-- ==================== SECTION 4 ==================== -->
+<div class="section">
+  <div class="section-title" style="color:var(--green)">Abschnitt 4</div>
+  <h2>Subnetting mit anderen Pr&auml;fixl&auml;ngen</h2>
+  <p>Das Prinzip funktioniert auch mit anderen Ausgangspr&auml;fixen. Die Subnet-Bits erstrecken sich dann &uuml;ber mehrere Hextets.</p>
+
+  <!-- /44 Beispiel -->
+  <h2 style="margin-top:24px">/44 &rarr; /64 Subnetze</h2>
+  <div class="formula-box">
+    <div class="formula">2<sup>(<span class="cyan">64</span> &minus; <span class="purple">44</span>)</sup> = 2<sup>20</sup> = <span class="green">1.048.576</span> Subnetze</div>
+  </div>
+
+  <div class="bit-bar">
+    <div class="seg prefix-seg" style="flex:44">Pr&auml;fix &middot; 44</div>
+    <div class="seg subnet-seg" style="flex:20">Subnet &middot; 20</div>
+    <div class="seg iid-seg" style="flex:64">IID &middot; 64</div>
+  </div>
+
+  <p>Die 20 Subnet-Bits erstrecken sich &uuml;ber die <strong>letzten 4 Bits des 3. Hextets</strong> und die <strong>gesamten 16 Bits des 4. Hextets</strong>.</p>
+
+  <div class="info-box green">
+    <strong>Beispiel:</strong> <code>2001:db8:a000::/44</code>
+  </div>
+  <div class="subnet-list">
+    <div class="entry"><span class="label">1. Subnetz:</span> <span class="addr">2001:db8:a<strong style="color:var(--green)">000</strong>:<strong style="color:var(--green)">0000</strong>::/64</span></div>
+    <div class="entry"><span class="label">2. Subnetz:</span> <span class="addr">2001:db8:a<strong style="color:var(--green)">000</strong>:<strong style="color:var(--green)">0001</strong>::/64</span></div>
+    <div class="entry"><span class="label">3. Subnetz:</span> <span class="addr">2001:db8:a<strong style="color:var(--green)">000</strong>:<strong style="color:var(--green)">0002</strong>::/64</span></div>
+    <div class="dots">&middot;&middot;&middot;</div>
+    <div class="entry"><span class="label">Letztes Subnetz:</span> <span class="addr">2001:db8:a<strong style="color:var(--green)">fff</strong>:<strong style="color:var(--green)">ffff</strong>::/64</span></div>
+  </div>
+
+  <!-- /36 Beispiel -->
+  <h2 style="margin-top:32px">/36 &rarr; /64 Subnetze</h2>
+  <div class="formula-box">
+    <div class="formula">2<sup>(<span class="cyan">64</span> &minus; <span class="purple">36</span>)</sup> = 2<sup>28</sup> = <span class="green">268.435.456</span> Subnetze</div>
+  </div>
+
+  <div class="bit-bar">
+    <div class="seg prefix-seg" style="flex:36">Pr&auml;fix &middot; 36</div>
+    <div class="seg subnet-seg" style="flex:28">Subnet &middot; 28</div>
+    <div class="seg iid-seg" style="flex:64">IID &middot; 64</div>
+  </div>
+
+  <p>Die 28 Subnet-Bits erstrecken sich &uuml;ber die <strong>letzten 12 Bits des 3. Hextets</strong> und die <strong>gesamten 16 Bits des 4. Hextets</strong>.</p>
+
+  <div class="info-box green">
+    <strong>Beispiel:</strong> <code>2001:db8:b000::/36</code>
+  </div>
+  <div class="subnet-list">
+    <div class="entry"><span class="label">1. Subnetz:</span> <span class="addr">2001:db8:b<strong style="color:var(--green)">000</strong>:<strong style="color:var(--green)">0000</strong>::/64</span></div>
+    <div class="entry"><span class="label">2. Subnetz:</span> <span class="addr">2001:db8:b<strong style="color:var(--green)">000</strong>:<strong style="color:var(--green)">0001</strong>::/64</span></div>
+    <div class="entry"><span class="label">3. Subnetz:</span> <span class="addr">2001:db8:b<strong style="color:var(--green)">000</strong>:<strong style="color:var(--green)">0002</strong>::/64</span></div>
+    <div class="dots">&middot;&middot;&middot;</div>
+    <div class="entry"><span class="label">Letztes Subnetz:</span> <span class="addr">2001:db8:b<strong style="color:var(--green)">fff</strong>:<strong style="color:var(--green)">ffff</strong>::/64</span></div>
+  </div>
+</div>
+
+<!-- ==================== SECTION 5 ==================== -->
+<div class="section">
+  <div class="section-title purple">Abschnitt 5</div>
+  <h2>Hosts pro Subnetz</h2>
+  <p>In einem /64-Subnetz stehen <strong>64 Bits</strong> f&uuml;r die Interface-ID zur Verf&uuml;gung:</p>
+
+  <div class="formula-box">
+    <div class="formula"><span class="purple">Hosts</span> = 2<sup>(128 &minus; <span class="cyan">Pr&auml;fixl&auml;nge</span>)</sup></div>
+    <div class="note">z.&nbsp;B. /64: 2^(128 &minus; 64) = 2^64 = 18.446.744.073.709.551.616 Adressen</div>
+  </div>
+
+  <p>Das sind &uuml;ber <strong>18 Trillionen</strong> m&ouml;gliche Adressen pro Subnetz &mdash; eine gigantische Zahl!</p>
+
+  <div class="info-box purple">
+    <strong>Wichtiger Unterschied zu IPv4:</strong> Bei IPv6 werden <strong>keine</strong> Netzwerk- oder Broadcast-Adressen abgezogen. Alle Adressen im IID-Bereich k&ouml;nnen theoretisch verwendet werden.
+  </div>
+
+  <table class="data-table">
+    <thead>
+      <tr><th>Pr&auml;fix</th><th>Host-Bits</th><th>Anzahl Hosts</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>/64</code></td><td>64</td><td>2<sup>64</sup> &asymp; 1,8 &times; 10<sup>19</sup></td></tr>
+      <tr><td><code>/112</code></td><td>16</td><td>2<sup>16</sup> = 65.536</td></tr>
+      <tr><td><code>/126</code></td><td>2</td><td>2<sup>2</sup> = 4</td></tr>
+      <tr><td><code>/128</code></td><td>0</td><td>1 (einzelne Adresse)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ==================== SECTION 6 ==================== -->
+<div class="section">
+  <div class="section-title">Abschnitt 6</div>
+  <h2>Warum /64 als Standard?</h2>
+  <p>Es gibt drei zentrale Gr&uuml;nde, warum /64 in der IPv6-Welt als Standardpr&auml;fix f&uuml;r Endnutzer-Subnetze gilt:</p>
+
+  <ol>
+    <li>
+      <strong style="color:var(--accent)">SLAAC ben&ouml;tigt 64 Bits f&uuml;r die Interface-ID</strong><br>
+      <span style="color:var(--dim);font-size:.88rem">Stateless Address Autoconfiguration (SLAAC) erzeugt die Interface-ID automatisch &mdash; entweder &uuml;ber EUI-64 (aus der MAC-Adresse) oder &uuml;ber Privacy Extensions (zuf&auml;llig). Beide Verfahren erwarten genau 64 Bits.</span>
+    </li>
+    <li>
+      <strong style="color:var(--accent)">Standardisierung vereinfacht die Netzwerkplanung</strong><br>
+      <span style="color:var(--dim);font-size:.88rem">Wenn jedes Subnetz /64 ist, entf&auml;llt die Frage nach der &bdquo;richtigen&ldquo; Subnetzgr&ouml;&szlig;e. Das macht Planung, Dokumentation und Troubleshooting einfacher.</span>
+    </li>
+    <li>
+      <strong style="color:var(--accent)">Viele IPv6-Funktionen setzen /64 voraus</strong><br>
+      <span style="color:var(--dim);font-size:.88rem">Neighbor Discovery, SLAAC und andere Protokolle sind f&uuml;r /64-Subnetze entworfen. Andere Pr&auml;fixl&auml;ngen k&ouml;nnen zu Kompatibilit&auml;tsproblemen f&uuml;hren.</span>
+    </li>
+  </ol>
+</div>
+
+<!-- ==================== SECTION 7 ==================== -->
+<div class="section">
+  <div class="section-title" style="color:var(--orange)">Abschnitt 7</div>
+  <h2>Tipps f&uuml;r die Klausur</h2>
+
+  <div class="info-box orange">
+    <strong>1. Adressen immer vollst&auml;ndig ausschreiben</strong><br>
+    Beim Rechnen keine abgek&uuml;rzten Adressen verwenden. Erst expandieren, dann die Bits z&auml;hlen.
+  </div>
+
+  <div class="info-box orange">
+    <strong>2. Bits sorgf&auml;ltig z&auml;hlen</strong><br>
+    <code>Pr&auml;fix-Bits + Subnet-Bits + Host-Bits = 128</code><br>
+    Diese Gleichung muss immer aufgehen!
+  </div>
+
+  <div class="info-box orange">
+    <strong>3. Subnetzadressen: Host-Teil ist Null</strong><br>
+    Die Netzwerkadresse eines Subnetzes hat immer alle Host-Bits (IID) auf <code>0</code> gesetzt.
+  </div>
+
+  <div class="info-box orange">
+    <strong>4. Formel einpr&auml;gen</strong><br>
+    Subnetze = 2<sup>(Zielpr&auml;fix &minus; Ausgangspr&auml;fix)</sup><br>
+    Hosts = 2<sup>(128 &minus; Pr&auml;fixl&auml;nge)</sup>
+  </div>
+
+  <div class="cta-row">
+    <a class="cta-link primary" href="03_subnetting.html">&Uuml;bung starten &rarr;</a>
+    <a class="cta-link secondary" href="index.html">&larr; Zur&uuml;ck zur &Uuml;bersicht</a>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

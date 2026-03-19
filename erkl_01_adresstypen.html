@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Erkl. 01 – Adresstypen & Präfixe</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#2a3550;--text:#e2e8f0;--dim:#64748b;--accent:#22d3ee;--accent2:#a78bfa;--green:#34d399;--red:#f87171;--orange:#fbbf24}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.noise{position:fixed;top:0;left:0;width:100%;height:100%;opacity:.03;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.container{max-width:800px;margin:0 auto;padding:40px 24px;position:relative;z-index:1}
+nav{display:flex;align-items:center;gap:16px;margin-bottom:48px}
+nav a{color:var(--dim);text-decoration:none;font-size:.9rem;transition:color .2s}nav a:hover{color:var(--accent)}
+.nav-sep{color:var(--border)}.nav-current{color:var(--text);font-weight:500}
+h1{font-size:1.8rem;font-weight:900;margin-bottom:8px}h1 span{color:var(--accent)}
+.subtitle{color:var(--dim);margin-bottom:40px;font-size:.95rem}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px}
+.section-title{font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.section h2{font-size:1.2rem;font-weight:700;margin-bottom:4px}
+.section h3{font-size:1.05rem;font-weight:700;margin-bottom:4px;margin-top:28px}
+.section h3:first-of-type{margin-top:0}
+.section-desc{color:var(--dim);font-size:.85rem;margin-bottom:24px}
+
+/* Content typography */
+p{line-height:1.7;margin-bottom:12px;font-size:.95rem}
+ul,ol{margin-bottom:16px;padding-left:20px}
+li{line-height:1.7;margin-bottom:6px;font-size:.95rem}
+code{font-family:'JetBrains Mono',monospace;background:rgba(34,211,238,.1);padding:2px 7px;border-radius:5px;font-size:.85rem;color:var(--accent)}
+
+/* Address example boxes */
+.addr-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0;font-family:'JetBrains Mono',monospace;font-size:.95rem;color:var(--accent);line-height:1.8;overflow-x:auto}
+.addr-box .label{font-family:'Outfit',sans-serif;font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);display:block;margin-bottom:6px}
+.addr-box .dim{color:var(--dim)}
+
+/* Visual address anatomy */
+.addr-anatomy{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:24px;margin:20px 0;text-align:center;overflow-x:auto}
+.addr-anatomy .full-addr{font-family:'JetBrains Mono',monospace;font-size:clamp(.8rem,2.5vw,1.1rem);letter-spacing:.05em;margin-bottom:16px;display:flex;justify-content:center;flex-wrap:wrap;gap:0}
+.addr-anatomy .full-addr .hextet{padding:4px 2px;position:relative}
+.addr-anatomy .full-addr .colon{color:var(--dim);padding:4px 1px}
+.addr-anatomy .full-addr .hi{color:var(--accent)}
+.addr-anatomy .full-addr .lo{color:var(--accent2)}
+.addr-anatomy .legend{display:flex;justify-content:center;gap:24px;font-size:.8rem;flex-wrap:wrap}
+.addr-anatomy .legend span{display:flex;align-items:center;gap:6px}
+.addr-anatomy .legend .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.addr-anatomy .legend .dot-hi{background:var(--accent)}
+.addr-anatomy .legend .dot-lo{background:var(--accent2)}
+.addr-anatomy .brace-row{display:flex;justify-content:center;gap:0;margin-bottom:4px;font-size:.7rem;color:var(--dim);font-family:'JetBrains Mono',monospace}
+.addr-anatomy .brace-label{text-align:center;font-size:.75rem;font-family:'Outfit',sans-serif}
+.addr-anatomy .brace-label.hi-label{color:var(--accent)}
+.addr-anatomy .brace-label.lo-label{color:var(--accent2)}
+
+/* Type cards within section */
+.type-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin:16px 0}
+.type-card .type-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.type-card .type-name{font-weight:700;font-size:1.05rem}
+.type-card .type-prefix{font-family:'JetBrains Mono',monospace;font-size:.8rem;background:rgba(34,211,238,.1);color:var(--accent);padding:3px 10px;border-radius:6px;border:1px solid rgba(34,211,238,.2)}
+.type-card .analogy{font-size:.85rem;color:var(--orange);margin-bottom:8px;font-style:italic}
+.type-card p,.type-card li{font-size:.9rem}
+.type-card ul{margin-bottom:8px}
+.type-card .addr-example{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--accent);background:var(--surface);padding:6px 12px;border-radius:6px;display:inline-block;margin-top:4px;border:1px solid var(--border)}
+
+/* Summary table */
+.summary-table{width:100%;border-collapse:separate;border-spacing:0;font-size:.9rem;margin-top:16px}
+.summary-table th{font-family:'JetBrains Mono',monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);padding:10px 14px;text-align:left;border-bottom:2px solid var(--border);white-space:nowrap}
+.summary-table td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.summary-table tr:last-child td{border-bottom:none}
+.summary-table .prefix-cell{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.85rem;white-space:nowrap}
+.summary-table .scope-cell{color:var(--dim);font-size:.85rem}
+
+/* Tip box */
+.tip-box{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:16px 20px;margin:16px 0;font-size:.9rem;line-height:1.7}
+.tip-box .tip-title{font-family:'JetBrains Mono',monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:var(--orange);margin-bottom:8px}
+.tip-box code{background:rgba(251,191,36,.1);color:var(--orange);border:none}
+
+/* Recognition list */
+.recog-list{list-style:none;padding:0;margin:16px 0}
+.recog-list li{display:flex;align-items:baseline;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.9rem}
+.recog-list li:last-child{border-bottom:none}
+.recog-list .recog-prefix{font-family:'JetBrains Mono',monospace;color:var(--accent);min-width:120px;font-size:.85rem;flex-shrink:0}
+.recog-list .recog-arrow{color:var(--dim);flex-shrink:0}
+.recog-list .recog-type{font-weight:600}
+
+/* CTA button */
+.btn{font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:600;padding:10px 24px;border-radius:10px;border:none;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block}
+.btn-primary{background:var(--accent);color:var(--bg)}.btn-primary:hover{opacity:.85;transform:translateY(-1px)}
+.btn-row{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+
+/* Multicast scope table */
+.scope-table{font-size:.85rem;margin:12px 0}
+.scope-table td{padding:4px 12px 4px 0;vertical-align:top}
+.scope-table .scope-code{font-family:'JetBrains Mono',monospace;color:var(--accent)}
+.scope-table .scope-name{color:var(--text)}
+
+/* Responsive */
+@media(max-width:600px){
+  .type-card .type-header{flex-direction:column;align-items:flex-start;gap:6px}
+  .recog-list li{flex-direction:column;gap:4px}
+  .recog-list .recog-prefix{min-width:auto}
+  .summary-table{font-size:.8rem}
+  .summary-table th,.summary-table td{padding:8px 8px}
+}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="container">
+<nav>
+  <a href="index.html">&larr; Übersicht</a><span class="nav-sep">/</span><span class="nav-current">Erkl. 01 Adresstypen</span>
+</nav>
+
+<h1>Adresstypen <span>& Präfixe</span></h1>
+<p class="subtitle">Erklärung &middot; Das Wichtigste zu den IPv6-Adresstypen</p>
+
+<!-- ============================================================= -->
+<!-- SECTION 1: Was ist eine IPv6-Adresse? -->
+<!-- ============================================================= -->
+<div class="section">
+  <div class="section-title">Grundlagen</div>
+  <h2>Was ist eine IPv6-Adresse?</h2>
+  <p class="section-desc">Die Basis, bevor wir über Typen sprechen.</p>
+
+  <p>Eine IPv6-Adresse ist <strong>128 Bit</strong> lang &ndash; viermal so viel wie eine IPv4-Adresse mit ihren 32 Bit. Das ergibt einen unvorstellbar grossen Adressraum von ca. 3,4 &times; 10<sup>38</sup> Adressen.</p>
+
+  <ul>
+    <li><strong>8 Gruppen</strong> (sogenannte <em>Hextets</em>) zu je <strong>16 Bit</strong></li>
+    <li>Getrennt durch <strong>Doppelpunkte</strong> <code>:</code></li>
+    <li>Darstellung in <strong>Hexadezimalzahlen</strong> (Ziffern <code>0&ndash;9</code> und Buchstaben <code>a&ndash;f</code>)</li>
+    <li>Jedes Hextet besteht aus <strong>4 Hex-Zeichen</strong> (= 16 Bit)</li>
+  </ul>
+
+  <div class="addr-anatomy">
+    <div class="full-addr">
+      <span class="hextet hi">2001</span><span class="colon">:</span>
+      <span class="hextet hi">0db8</span><span class="colon">:</span>
+      <span class="hextet hi">85a3</span><span class="colon">:</span>
+      <span class="hextet hi">0000</span><span class="colon">:</span>
+      <span class="hextet lo">0000</span><span class="colon">:</span>
+      <span class="hextet lo">8a2e</span><span class="colon">:</span>
+      <span class="hextet lo">0370</span><span class="colon">:</span>
+      <span class="hextet lo">7334</span>
+    </div>
+    <div style="display:flex;justify-content:center;gap:0;margin-bottom:12px">
+      <div style="flex:1;max-width:240px;text-align:center">
+        <div style="border-top:2px solid var(--accent);margin:0 8px;padding-top:4px"></div>
+        <div class="brace-label hi-label">Netzwerk-Präfix (64 Bit)</div>
+      </div>
+      <div style="flex:1;max-width:240px;text-align:center">
+        <div style="border-top:2px solid var(--accent2);margin:0 8px;padding-top:4px"></div>
+        <div class="brace-label lo-label">Interface ID (64 Bit)</div>
+      </div>
+    </div>
+    <div class="legend">
+      <span><span class="dot dot-hi"></span> Netzwerkteil</span>
+      <span><span class="dot dot-lo"></span> Hostteil (Interface ID)</span>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <div class="tip-title">Merkhilfe</div>
+    IPv4 = 4 Dezimalzahlen mit Punkten: <code>192.168.1.1</code><br>
+    IPv6 = 8 Hex-Gruppen mit Doppelpunkten: <code>2001:0db8:…:7334</code>
+  </div>
+</div>
+
+<!-- ============================================================= -->
+<!-- SECTION 2: Die 5 Adresstypen -->
+<!-- ============================================================= -->
+<div class="section">
+  <div class="section-title">Die 5 Adresstypen</div>
+  <h2>Welche Typen gibt es?</h2>
+  <p class="section-desc">Jede IPv6-Adresse gehört zu einem bestimmten Typ &ndash; erkennbar am Präfix (den ersten Zeichen).</p>
+
+  <!-- 1. Global Unicast -->
+  <h3>1. Global Unicast</h3>
+  <div class="type-card">
+    <div class="type-header">
+      <span class="type-name">Global Unicast</span>
+      <span class="type-prefix">2000::/3</span>
+    </div>
+    <div class="analogy">Vergleich: Wie eine öffentliche IPv4-Adresse &ndash; weltweit eindeutig und routbar.</div>
+    <p>Global-Unicast-Adressen sind die &bdquo;normalen&ldquo; Internet-Adressen. Jedes Gerät, das direkt im Internet erreichbar sein soll, bekommt eine solche Adresse.</p>
+    <ul>
+      <li><strong>Weltweit routbar</strong> &ndash; funktioniert überall im Internet</li>
+      <li>Das Präfix <code>2000::/3</code> bedeutet: alle Adressen, die mit <code>2</code> oder <code>3</code> beginnen (binär: <code>001…</code>)</li>
+      <li>Aktuell sind fast alle vergebenen Adressen im Bereich <code>2xxx:…</code></li>
+      <li>Wird vom Provider (ISP) oder einer Registry (RIPE, ARIN, etc.) zugeteilt</li>
+    </ul>
+    <div class="addr-box">
+      <span class="label">Beispiele</span>
+      2607:f8b0:4004:0800::200e <span class="dim">&larr; Google DNS</span><br>
+      2a00:1450:4001:081f::2004 <span class="dim">&larr; Google Server</span>
+    </div>
+  </div>
+
+  <!-- 2. Link-Local -->
+  <h3>2. Link-Local</h3>
+  <div class="type-card">
+    <div class="type-header">
+      <span class="type-name">Link-Local</span>
+      <span class="type-prefix">fe80::/10</span>
+    </div>
+    <div class="analogy">Vergleich: Wie eine APIPA-Adresse (169.254.x.x) bei IPv4 &ndash; automatisch, nur lokal.</div>
+    <p>Link-Local-Adressen werden <strong>automatisch</strong> auf jedem IPv6-fähigen Interface konfiguriert &ndash; ohne DHCP, ohne manuelle Einstellung. Sie funktionieren nur im selben Netzwerksegment (Link).</p>
+    <ul>
+      <li><strong>Nicht routbar</strong> &ndash; Pakete verlassen nie das lokale Segment</li>
+      <li>Beginnt immer mit <code>fe80::</code></li>
+      <li>Wird verwendet für: <strong>Neighbor Discovery</strong>, <strong>Router Discovery</strong>, Grundkommunikation im LAN</li>
+      <li>Jedes IPv6-Interface hat <em>immer</em> eine Link-Local-Adresse, auch ohne Router</li>
+    </ul>
+    <div class="addr-box">
+      <span class="label">Beispiele</span>
+      fe80::1 <span class="dim">&larr; typisch für Router-Interface</span><br>
+      fe80::a1b2:c3d4:e5f6:7890 <span class="dim">&larr; per EUI-64 generiert</span>
+    </div>
+  </div>
+
+  <!-- 3. Unique Local -->
+  <h3>3. Unique Local (ULA)</h3>
+  <div class="type-card">
+    <div class="type-header">
+      <span class="type-name">Unique Local</span>
+      <span class="type-prefix">fc00::/7</span>
+    </div>
+    <div class="analogy">Vergleich: Wie 192.168.x.x oder 10.x.x.x bei IPv4 &ndash; private Adressen für interne Netze.</div>
+    <p>Unique-Local-Adressen sind für <strong>private Netzwerke</strong> gedacht. Sie werden im Internet nicht geroutet und sind nur innerhalb der eigenen Organisation gültig.</p>
+    <ul>
+      <li><strong>Nicht im Internet routbar</strong></li>
+      <li>Offizielles Präfix: <code>fc00::/7</code> &ndash; in der Praxis wird fast immer <code>fd00::/8</code> verwendet</li>
+      <li>Ideal für: Firmennetze, Labore, Heimnetzwerke</li>
+      <li>Der 40-Bit-Teil nach <code>fd</code> sollte zufällig gewählt werden, um Konflikte bei Zusammenschaltung zu vermeiden</li>
+    </ul>
+    <div class="addr-box">
+      <span class="label">Beispiele</span>
+      fd12:3456:789a::1 <span class="dim">&larr; typische ULA-Adresse</span><br>
+      fd00::1 <span class="dim">&larr; einfache ULA</span>
+    </div>
+  </div>
+
+  <!-- 4. Multicast -->
+  <h3>4. Multicast</h3>
+  <div class="type-card">
+    <div class="type-header">
+      <span class="type-name">Multicast</span>
+      <span class="type-prefix">ff00::/8</span>
+    </div>
+    <div class="analogy">Vergleich: Wie Broadcast bei IPv4 &ndash; aber gezielter. Eine Nachricht an eine Gruppe statt an alle.</div>
+    <p>Multicast sendet ein Paket <strong>gleichzeitig an mehrere Empfänger</strong>, die zu einer Gruppe gehören. In IPv6 gibt es <strong>keinen Broadcast</strong> mehr &ndash; Multicast übernimmt diese Rolle.</p>
+    <ul>
+      <li>Beginnt immer mit <code>ff</code></li>
+      <li>Das dritte Hex-Zeichen definiert den <strong>Scope</strong> (Reichweite):</li>
+    </ul>
+    <table class="scope-table">
+      <tr><td class="scope-code">ff01::</td><td class="scope-name">Node-Local (nur das eigene Gerät)</td></tr>
+      <tr><td class="scope-code">ff02::</td><td class="scope-name">Link-Local (lokales Segment)</td></tr>
+      <tr><td class="scope-code">ff05::</td><td class="scope-name">Site-Local (ganzer Standort)</td></tr>
+      <tr><td class="scope-code">ff0e::</td><td class="scope-name">Global (gesamtes Internet)</td></tr>
+    </table>
+
+    <div class="tip-box" style="margin-top:16px">
+      <div class="tip-title">Wichtige Multicast-Adressen</div>
+      <code>ff02::1</code> &ndash; Alle Nodes im lokalen Segment<br>
+      <code>ff02::2</code> &ndash; Alle Router im lokalen Segment
+    </div>
+
+    <div class="addr-box">
+      <span class="label">Beispiele</span>
+      ff02::1 <span class="dim">&larr; All Nodes (Link-Local)</span><br>
+      ff02::2 <span class="dim">&larr; All Routers (Link-Local)</span><br>
+      ff02::1:ff00:1 <span class="dim">&larr; Solicited-Node Multicast</span>
+    </div>
+  </div>
+
+  <!-- 5. Dokumentation/Beispiel -->
+  <h3>5. Dokumentation / Beispiel</h3>
+  <div class="type-card">
+    <div class="type-header">
+      <span class="type-name">Dokumentation</span>
+      <span class="type-prefix">2001:db8::/32</span>
+    </div>
+    <div class="analogy">Vergleich: Wie 192.0.2.0/24 bei IPv4 &ndash; nur für Beispiele in Dokumentationen gedacht.</div>
+    <p>Dieser Adressbereich ist <strong>ausschliesslich für Dokumentation und Beispiele</strong> reserviert. Er wird niemals in echten Netzwerken verwendet und ist nicht routbar.</p>
+    <ul>
+      <li>Erkennbar an <code>2001:db8:</code> bzw. <code>2001:0db8:</code> am Anfang</li>
+      <li>Wird in RFCs, Lehrbüchern, Prüfungen und Tutorials verwendet</li>
+      <li>Wenn du in einer Klausur eine Adresse mit <code>2001:db8:</code> siehst &ndash; das ist Dokumentation!</li>
+    </ul>
+    <div class="addr-box">
+      <span class="label">Beispiele</span>
+      2001:0db8:85a3::8a2e:0370:7334 <span class="dim">&larr; klassisches Doku-Beispiel</span><br>
+      2001:db8:1234::1 <span class="dim">&larr; vereinfacht</span><br>
+      2001:db8::/32 <span class="dim">&larr; der gesamte reservierte Bereich</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================= -->
+<!-- SECTION 3: Anycast (Bonus) -->
+<!-- ============================================================= -->
+<div class="section">
+  <div class="section-title">Bonus</div>
+  <h2>Anycast</h2>
+  <p class="section-desc">Ein spezieller Adresstyp ohne eigenes Präfix.</p>
+
+  <p>Anycast ist besonders: Es gibt <strong>kein eigenes Präfix</strong>. Anycast-Adressen stammen aus dem normalen Unicast-Adressraum. Das Besondere ist die <em>Verwendung</em>, nicht die Adresse selbst.</p>
+
+  <ul>
+    <li><strong>Mehrere Hosts</strong> teilen sich <strong>dieselbe Adresse</strong></li>
+    <li>Ein Paket wird immer zum <strong>nächstgelegenen</strong> Host geroutet (basierend auf Routing-Metrik)</li>
+    <li>Das Netzwerk entscheidet automatisch, welcher Host antwortet</li>
+  </ul>
+
+  <p><strong>Typische Einsatzgebiete:</strong></p>
+  <ul>
+    <li><strong>DNS-Server</strong> &ndash; z.B. nutzt Cloudflare die Anycast-Adresse <code>1.1.1.1</code></li>
+    <li><strong>CDN</strong> (Content Delivery Networks) &ndash; Inhalte werden vom nächsten Server geliefert</li>
+    <li><strong>Lastverteilung</strong> &ndash; Anfragen verteilen sich automatisch auf mehrere Standorte</li>
+  </ul>
+
+  <div class="tip-box">
+    <div class="tip-title">Klausur-Hinweis</div>
+    Man kann Anycast <strong>nicht am Präfix erkennen</strong>. Es ist ein Konfigurationsmerkmal, kein Adressmerkmal. In Aufgaben wird Anycast oft als &bdquo;Sonderfall&ldquo; abgefragt.
+  </div>
+</div>
+
+<!-- ============================================================= -->
+<!-- SECTION 4: Übersichtstabelle -->
+<!-- ============================================================= -->
+<div class="section">
+  <div class="section-title">Zusammenfassung</div>
+  <h2>Präfixe auf einen Blick</h2>
+  <p class="section-desc">Alle Adresstypen mit Präfix, Geltungsbereich und Zweck.</p>
+
+  <div style="overflow-x:auto">
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Typ</th>
+          <th>Präfix</th>
+          <th>Scope</th>
+          <th>Zweck</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Global Unicast</strong></td>
+          <td class="prefix-cell">2000::/3</td>
+          <td class="scope-cell">Global</td>
+          <td>Öffentliche Internet-Adressen</td>
+        </tr>
+        <tr>
+          <td><strong>Link-Local</strong></td>
+          <td class="prefix-cell">fe80::/10</td>
+          <td class="scope-cell">Link</td>
+          <td>Automatische lokale Kommunikation</td>
+        </tr>
+        <tr>
+          <td><strong>Unique Local</strong></td>
+          <td class="prefix-cell">fc00::/7</td>
+          <td class="scope-cell">Organisation</td>
+          <td>Private Netzwerke (wie 192.168.x.x)</td>
+        </tr>
+        <tr>
+          <td><strong>Multicast</strong></td>
+          <td class="prefix-cell">ff00::/8</td>
+          <td class="scope-cell">Variabel</td>
+          <td>Gruppenkommunikation (ersetzt Broadcast)</td>
+        </tr>
+        <tr>
+          <td><strong>Dokumentation</strong></td>
+          <td class="prefix-cell">2001:db8::/32</td>
+          <td class="scope-cell">&ndash;</td>
+          <td>Nur für Beispiele &amp; Dokumentation</td>
+        </tr>
+        <tr>
+          <td><strong>Anycast</strong></td>
+          <td class="prefix-cell" style="color:var(--dim)">kein eigenes</td>
+          <td class="scope-cell">Global</td>
+          <td>Routing zum nächsten Host</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================= -->
+<!-- SECTION 5: Tipps für die Klausur -->
+<!-- ============================================================= -->
+<div class="section">
+  <div class="section-title">Klausurvorbereitung</div>
+  <h2>Tipps für die Klausur</h2>
+  <p class="section-desc">So erkennst du den Adresstyp auf einen Blick.</p>
+
+  <p><strong>Schnell-Erkennung:</strong> Schau dir die ersten Zeichen der Adresse an &ndash; das Präfix verrät den Typ.</p>
+
+  <ul class="recog-list">
+    <li>
+      <span class="recog-prefix">ff…</span>
+      <span class="recog-arrow">&rarr;</span>
+      <span class="recog-type">Multicast</span>
+    </li>
+    <li>
+      <span class="recog-prefix">fe80::</span>
+      <span class="recog-arrow">&rarr;</span>
+      <span class="recog-type">Link-Local</span>
+    </li>
+    <li>
+      <span class="recog-prefix">fd… / fc…</span>
+      <span class="recog-arrow">&rarr;</span>
+      <span class="recog-type">Unique Local</span>
+    </li>
+    <li>
+      <span class="recog-prefix">2001:db8:</span>
+      <span class="recog-arrow">&rarr;</span>
+      <span class="recog-type">Dokumentation</span>
+    </li>
+    <li>
+      <span class="recog-prefix">2… / 3…</span>
+      <span class="recog-arrow">&rarr;</span>
+      <span class="recog-type">Global Unicast</span>
+    </li>
+  </ul>
+
+  <div class="tip-box">
+    <div class="tip-title">Achtung: Reihenfolge beachten!</div>
+    <code>2001:db8:…</code> beginnt zwar mit <code>2</code>, ist aber <strong>kein</strong> Global Unicast, sondern Dokumentation. Prüfe daher immer zuerst auf <code>2001:db8:</code>, bevor du &bdquo;Global Unicast&ldquo; wählst. Je spezifischer das Präfix, desto höher die Priorität.
+  </div>
+
+  <p style="margin-top:20px"><strong>Eselsbrücken:</strong></p>
+  <ul>
+    <li><code>ff</code> = <strong>F</strong>ür <strong>F</strong>reunde (Multicast = Gruppe)</li>
+    <li><code>fe80</code> = <strong>Fe</strong>stgeklebt am <strong>L</strong>ink (Link-Local)</li>
+    <li><code>fd</code> = <strong>F</strong>ür <strong>D</strong>aheim (Unique Local = privat)</li>
+    <li><code>2001:db8</code> = <strong>D</strong>oku-<strong>B</strong>eispiel (Dokumentation)</li>
+  </ul>
+
+  <div class="btn-row" style="margin-top:32px">
+    <a class="btn btn-primary" href="01_adresstypen.html">Zur Übung &rarr;</a>
+    <a class="btn" href="index.html" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)">&larr; Zurück zur Übersicht</a>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

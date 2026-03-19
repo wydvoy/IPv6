@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Erkl. 05 – Begriffe & Übergangstechnologien</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#2a3550;--text:#e2e8f0;--dim:#64748b;--accent:#a78bfa;--accent2:#22d3ee;--green:#34d399;--red:#f87171;--orange:#fbbf24}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.7}
+.noise{position:fixed;top:0;left:0;width:100%;height:100%;opacity:.03;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.container{max-width:800px;margin:0 auto;padding:40px 24px;position:relative;z-index:1}
+nav{display:flex;align-items:center;gap:16px;margin-bottom:48px;flex-wrap:wrap}
+nav a{color:var(--dim);text-decoration:none;font-size:.9rem;transition:color .2s}nav a:hover{color:var(--accent)}
+.nav-sep{color:var(--border)}.nav-current{color:var(--text);font-weight:500}
+h1{font-size:1.8rem;font-weight:900;margin-bottom:8px}h1 span{color:var(--accent)}
+.subtitle{color:var(--dim);margin-bottom:40px;font-size:.95rem}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px}
+.section-title{font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.section h2{font-size:1.2rem;font-weight:700;margin-bottom:12px}
+.section p{font-size:.92rem;margin-bottom:12px;color:var(--text)}
+.section p:last-child{margin-bottom:0}
+
+/* Key term boxes */
+.key-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin:16px 0}
+.key-box.accent-border{border-left:3px solid var(--accent)}
+.key-box.green-border{border-left:3px solid var(--green)}
+.key-box.orange-border{border-left:3px solid var(--orange)}
+.key-box.cyan-border{border-left:3px solid var(--accent2)}
+.key-box.red-border{border-left:3px solid var(--red)}
+.key-box h3{font-size:1rem;font-weight:700;margin-bottom:8px}
+.key-box p,.key-box li{font-size:.88rem;line-height:1.7}
+.key-box ul,.key-box ol{padding-left:20px;margin:8px 0}
+.key-box li{margin-bottom:4px}
+.key-box code{font-family:'JetBrains Mono',monospace;background:rgba(167,139,250,.12);padding:2px 6px;border-radius:4px;font-size:.82rem;color:var(--accent)}
+
+/* Visual diagrams */
+.visual{font-family:'JetBrains Mono',monospace;font-size:.82rem;padding:20px;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin:16px 0;line-height:1.9;text-align:center;overflow-x:auto;white-space:pre}
+.visual .hl{color:var(--accent);font-weight:700}
+.visual .hl2{color:var(--accent2);font-weight:700}
+.visual .hlg{color:var(--green);font-weight:700}
+.visual .hlo{color:var(--orange);font-weight:700}
+.visual .hlr{color:var(--red);font-weight:700}
+.visual .dim{color:var(--dim)}
+
+/* Steps */
+.steps{margin:16px 0}
+.step{display:flex;gap:14px;margin-bottom:14px;align-items:flex-start}
+.step:last-child{margin-bottom:0}
+.step-num{font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:700;color:var(--bg);background:var(--accent);width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-text{font-size:.9rem;line-height:1.6}
+.step-text code{font-family:'JetBrains Mono',monospace;background:rgba(167,139,250,.12);padding:2px 6px;border-radius:4px;font-size:.82rem;color:var(--accent)}
+
+/* Inline code */
+code{font-family:'JetBrains Mono',monospace;background:rgba(167,139,250,.12);padding:2px 6px;border-radius:4px;font-size:.85rem;color:var(--accent)}
+
+/* Tables */
+.info-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.85rem}
+.info-table th{text-align:left;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--accent);letter-spacing:.05em;text-transform:uppercase}
+.info-table td{padding:10px 14px;border:1px solid var(--border)}
+.info-table tr:hover td{background:rgba(167,139,250,.03)}
+.info-table code{font-size:.8rem}
+
+/* Pro/Con */
+.pro-con{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+@media(max-width:550px){.pro-con{grid-template-columns:1fr}}
+.pro,.con{border-radius:10px;padding:16px;font-size:.88rem}
+.pro{background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15)}
+.pro strong{color:var(--green)}
+.con{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.15)}
+.con strong{color:var(--red)}
+.pro ul,.con ul{padding-left:18px;margin-top:6px;font-size:.85rem}
+.pro li,.con li{margin-bottom:4px;line-height:1.5}
+
+/* Link button */
+.link-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--accent);color:var(--bg);font-weight:700;border-radius:10px;text-decoration:none;font-size:.9rem;transition:all .2s;margin-top:8px}
+.link-btn:hover{opacity:.85;transform:translateY(-1px)}
+
+/* Compare box */
+.compare{display:grid;grid-template-columns:1fr auto 1fr;gap:0;margin:16px 0;align-items:stretch}
+@media(max-width:550px){.compare{grid-template-columns:1fr;gap:12px}.compare-arrow{transform:rotate(90deg)}}
+.compare-left,.compare-right{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;font-size:.85rem}
+.compare-arrow{display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:var(--dim);padding:0 12px}
+
+/* Multicast ref table */
+.mc-ref{margin:16px 0}
+.mc-ref-row{display:flex;gap:16px;align-items:baseline;padding:10px 16px;border-radius:8px;margin-bottom:6px;background:var(--surface2);border:1px solid var(--border);font-size:.88rem}
+.mc-ref-addr{font-family:'JetBrains Mono',monospace;color:var(--accent);font-weight:700;min-width:200px;font-size:.82rem}
+@media(max-width:550px){.mc-ref-row{flex-direction:column;gap:4px}.mc-ref-addr{min-width:auto}}
+
+/* Tip box */
+.tip-box{background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.15);border-radius:12px;padding:20px 24px;margin:16px 0}
+.tip-box h3{color:var(--accent);font-size:1rem;margin-bottom:10px}
+.tip-box ul{padding-left:20px;font-size:.88rem}
+.tip-box li{margin-bottom:6px;line-height:1.6}
+.tip-box li code{font-size:.8rem}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="container">
+<nav>
+  <a href="index.html">&larr; &Uuml;bersicht</a><span class="nav-sep">/</span><span class="nav-current">Erkl. 05 Begriffe</span><span class="nav-sep">/</span><a href="05_begriffe.html">Zur &Uuml;bung &rarr;</a>
+</nav>
+<h1>Begriffe &amp; <span>&Uuml;bergangstechnologien</span></h1>
+<p class="subtitle">Erkl&auml;rungsseite zu Aufgabe 5 &middot; Dual Stack, Tunneling, NAT64, SLAAC, IPv6-Header und mehr</p>
+
+<!-- Section 1: Warum Übergangstechnologien? -->
+<div class="section">
+  <div class="section-title">Sektion 1</div>
+  <h2>Warum &Uuml;bergangstechnologien?</h2>
+  <p>IPv4 und IPv6 sind <strong>nicht direkt kompatibel</strong>. Ein IPv4-Ger&auml;t kann ein IPv6-Paket nicht verstehen und umgekehrt. Das Internet kann aber nicht &uuml;ber Nacht umgestellt werden &ndash; Milliarden von Ger&auml;ten und Diensten m&uuml;ssen schrittweise migriert werden.</p>
+  <p>Deshalb brauchen wir <strong>drei Hauptstrategien</strong>, die den &Uuml;bergang erm&ouml;glichen:</p>
+
+  <div class="key-box accent-border">
+    <ul>
+      <li><strong>Dual Stack</strong> &ndash; Beide Protokolle gleichzeitig betreiben</li>
+      <li><strong>Tunneling</strong> &ndash; IPv6-Pakete in IPv4-Paketen kapseln</li>
+      <li><strong>Translation (NAT64)</strong> &ndash; Zwischen den Protokollen &uuml;bersetzen</li>
+    </ul>
+  </div>
+
+  <div class="visual"><span class="dim">&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;</span>     <span class="dim">&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;</span>     <span class="dim">&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;</span>
+<span class="dim">&#9474;</span> <span class="hlo">IPv4-Welt</span> <span class="dim">&#9474;</span> <span class="dim">&harr;</span>  <span class="dim">&#9474;</span> <span class="hl">&Uuml;bergangstechnologie</span> <span class="dim">&#9474;</span>  <span class="dim">&harr;</span> <span class="dim">&#9474;</span> <span class="hl2">IPv6-Welt</span> <span class="dim">&#9474;</span>
+<span class="dim">&#9474;</span>  <span class="hlo">nur v4</span>  <span class="dim">&#9474;</span>     <span class="dim">&#9474;</span>  <span class="hl">Dual Stack / Tunnel</span>  <span class="dim">&#9474;</span>     <span class="dim">&#9474;</span>  <span class="hl2">nur v6</span>  <span class="dim">&#9474;</span>
+<span class="dim">&#9474;</span>           <span class="dim">&#9474;</span>     <span class="dim">&#9474;</span>  <span class="hl">/ NAT64</span>              <span class="dim">&#9474;</span>     <span class="dim">&#9474;</span>           <span class="dim">&#9474;</span>
+<span class="dim">&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</span>     <span class="dim">&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</span>     <span class="dim">&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</span></div>
+</div>
+
+<!-- Section 2: Dual Stack -->
+<div class="section">
+  <div class="section-title">Sektion 2</div>
+  <h2>Dual Stack</h2>
+  <p>Bei <strong>Dual Stack</strong> laufen IPv4 und IPv6 <strong>gleichzeitig</strong> auf demselben Ger&auml;t bzw. im selben Netzwerk. Das Betriebssystem entscheidet pro Verbindung, welches Protokoll verwendet wird.</p>
+
+  <div class="visual"><span class="dim">&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;</span>
+<span class="dim">&#9474;</span>        <span class="hl">Dual-Stack-Ger&auml;t</span>         <span class="dim">&#9474;</span>
+<span class="dim">&#9474;</span>                                <span class="dim">&#9474;</span>
+<span class="dim">&#9474;</span>  <span class="dim">&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;</span>  <span class="dim">&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;</span>  <span class="dim">&#9474;</span>
+<span class="dim">&#9474;</span>  <span class="dim">&#9474;</span> <span class="hlo">IPv4-Stack</span> <span class="dim">&#9474;</span>  <span class="dim">&#9474;</span> <span class="hl2">IPv6-Stack</span> <span class="dim">&#9474;</span>  <span class="dim">&#9474;</span>
+<span class="dim">&#9474;</span>  <span class="dim">&#9474;</span> <span class="hlo">192.168.1.5</span><span class="dim">&#9474;</span>  <span class="dim">&#9474;</span> <span class="hl2">2001:db8::5</span><span class="dim">&#9474;</span>  <span class="dim">&#9474;</span>
+<span class="dim">&#9474;</span>  <span class="dim">&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</span>  <span class="dim">&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</span>  <span class="dim">&#9474;</span>
+<span class="dim">&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</span></div>
+
+  <div class="pro-con">
+    <div class="pro">
+      <strong>Vorteile</strong>
+      <ul>
+        <li>Volle Kompatibilit&auml;t mit beiden Welten</li>
+        <li>Einfaches Konzept</li>
+        <li>Schrittweise Migration m&ouml;glich</li>
+      </ul>
+    </div>
+    <div class="con">
+      <strong>Nachteile</strong>
+      <ul>
+        <li>Doppelte Konfiguration</li>
+        <li>Doppelte Ressourcen</li>
+        <li>Doppelte potenzielle Fehlerquellen</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="key-box green-border">
+    <h3>Praxisbezug</h3>
+    <p>Die meisten modernen Betriebssysteme (Windows, macOS, Linux) und Internet-Provider nutzen heute Dual Stack. Dein Computer betreibt sehr wahrscheinlich bereits beide Protokolle gleichzeitig.</p>
+  </div>
+</div>
+
+<!-- Section 3: Tunneling -->
+<div class="section">
+  <div class="section-title">Sektion 3</div>
+  <h2>Tunneling</h2>
+  <p>Beim <strong>Tunneling</strong> werden IPv6-Pakete in IPv4-Pakete <strong>eingekapselt</strong> (eingepackt). So kann IPv6-Kommunikation &uuml;ber eine reine IPv4-Infrastruktur stattfinden.</p>
+  <p>Stell dir vor, du steckst einen Brief (IPv6) in einen zweiten Umschlag (IPv4), damit er &uuml;ber das alte Postsystem transportiert werden kann.</p>
+
+  <div class="visual"><span class="dim">&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;</span>
+<span class="dim">&#9474;</span> <span class="hlo">IPv4-Header</span> <span class="dim">&#9474;</span> <span class="hl2">IPv6-Header</span> <span class="dim">&#9474;</span> <span class="hlg">Nutzdaten</span> <span class="dim">&#9474;</span>
+<span class="dim">&#9474;</span> <span class="hlo">(Umschlag)</span>  <span class="dim">&#9474;</span> <span class="hl2">(Brief)</span>     <span class="dim">&#9474;</span> <span class="hlg">(Inhalt)</span>  <span class="dim">&#9474;</span>
+<span class="dim">&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</span></div>
+
+  <div class="key-box accent-border">
+    <h3>G&auml;ngige Tunneling-Protokolle</h3>
+    <ul>
+      <li><strong>6to4</strong> &ndash; Automatisches Tunneling mit dem Pr&auml;fix <code>2002::/16</code>. Leitet IPv6-Pakete &uuml;ber &ouml;ffentliche IPv4-Adressen weiter.</li>
+      <li><strong>Teredo</strong> &ndash; Tunneling durch NAT hindurch (nutzt UDP-Kapselung). Von Microsoft entwickelt. Funktioniert auch hinter NAT-Ger&auml;ten.</li>
+      <li><strong>ISATAP</strong> &ndash; Intra-Site Automatic Tunnel Addressing Protocol. Gedacht f&uuml;r den Einsatz <strong>innerhalb von Organisationen</strong>, um IPv6 &uuml;ber ein internes IPv4-Netzwerk zu transportieren.</li>
+    </ul>
+  </div>
+
+  <div class="pro-con">
+    <div class="pro">
+      <strong>Vorteile</strong>
+      <ul>
+        <li>Bestehende IPv4-Infrastruktur kann weitergenutzt werden</li>
+        <li>Erm&ouml;glicht IPv6-Inseln &uuml;ber IPv4 zu verbinden</li>
+      </ul>
+    </div>
+    <div class="con">
+      <strong>Nachteile</strong>
+      <ul>
+        <li>Overhead durch zus&auml;tzliche Header</li>
+        <li>Erh&ouml;hte Komplexit&auml;t</li>
+        <li>Potenzielle Sicherheitsprobleme</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Section 4: NAT64 / DNS64 -->
+<div class="section">
+  <div class="section-title">Sektion 4</div>
+  <h2>NAT64 / DNS64</h2>
+  <p><strong>NAT64</strong> &uuml;bersetzt zwischen IPv6- und IPv4-Adressen. So k&ouml;nnen <strong>IPv6-only-Clients</strong> auf <strong>IPv4-only-Server</strong> zugreifen.</p>
+
+  <div class="key-box accent-border">
+    <h3>Wie funktioniert es?</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">Ein IPv6-Client m&ouml;chte einen IPv4-Server erreichen (z.B. <code>93.184.216.34</code>)</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text"><strong>DNS64</strong> erstellt einen synthetischen AAAA-Record: Die IPv4-Adresse wird in ein IPv6-Pr&auml;fix eingebettet &rarr; <code>64:ff9b::93.184.216.34</code> (Pr&auml;fix <code>64:ff9b::/96</code>)</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">Das <strong>NAT64-Gateway</strong> empf&auml;ngt das IPv6-Paket, extrahiert die IPv4-Adresse und &uuml;bersetzt das Paket zwischen den Protokollen</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="key-box orange-border">
+    <h3>Unterschied: NAT vs. NAT64</h3>
+    <div class="compare">
+      <div class="compare-left">
+        <strong style="color:var(--orange)">NAT (NAT44)</strong><br>
+        IPv4 privat &rarr; IPv4 &ouml;ffentlich<br>
+        <span style="color:var(--dim);font-size:.82rem">Gleiches Protokoll, nur Adress&uuml;bersetzung</span>
+      </div>
+      <div class="compare-arrow">&ne;</div>
+      <div class="compare-right">
+        <strong style="color:var(--accent)">NAT64</strong><br>
+        IPv6 &rarr; IPv4<br>
+        <span style="color:var(--dim);font-size:.82rem">Protokoll&uuml;bergreifende &Uuml;bersetzung</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="key-box green-border">
+    <h3>Praxisbezug</h3>
+    <p>NAT64 wird vor allem in <strong>Mobilfunknetzen</strong> eingesetzt (z.B. T-Mobile). Viele Mobilfunkanbieter betreiben inzwischen IPv6-only-Netze und nutzen NAT64 f&uuml;r den Zugang zur IPv4-Welt.</p>
+  </div>
+</div>
+
+<!-- Section 5: SLAAC -->
+<div class="section">
+  <div class="section-title">Sektion 5</div>
+  <h2>SLAAC &ndash; Stateless Address Autoconfiguration</h2>
+  <p>SLAAC erm&ouml;glicht es einem Host, sich <strong>selbst eine IPv6-Adresse zu konfigurieren</strong> &ndash; ganz <strong>ohne DHCP-Server</strong>.</p>
+  <p>&bdquo;Stateless&ldquo; bedeutet: <strong>Kein Server merkt sich</strong>, welche Adressen vergeben wurden. Der Host handelt eigenst&auml;ndig.</p>
+
+  <div class="key-box accent-border">
+    <h3>SLAAC-Prozess Schritt f&uuml;r Schritt</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">Host erstellt eine <strong>Link-Local-Adresse</strong>: <code>fe80::</code> + Interface ID</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">Host sendet eine <strong>Router Solicitation (RS)</strong> an <code>ff02::2</code> (alle Router auf dem Link)</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">Router antwortet mit einem <strong>Router Advertisement (RA)</strong>, das das <strong>Netzwerk-Pr&auml;fix</strong> enth&auml;lt (z.B. <code>2001:db8:abcd:1::/64</code>)</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-text">Host kombiniert: <strong>Pr&auml;fix vom Router</strong> + <strong>selbst generierte Interface ID</strong> = vollst&auml;ndige Adresse</div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-text">Host f&uuml;hrt <strong>Duplicate Address Detection (DAD)</strong> durch, um sicherzustellen, dass die Adresse im Netzwerk einmalig ist</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="visual"><span class="hl2">Host</span>                                       <span class="hlg">Router</span>
+  <span class="dim">&#9474;</span>                                          <span class="dim">&#9474;</span>
+  <span class="dim">&#9474;</span><span class="dim">&#9472;&#9472;&#9472;&#9472;</span> <span class="hlo">RS (Router Solicitation)</span> <span class="dim">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&rarr;</span><span class="dim">&#9474;</span>   an <span class="hl">ff02::2</span>
+  <span class="dim">&#9474;</span>                                          <span class="dim">&#9474;</span>
+  <span class="dim">&#9474;</span><span class="dim">&larr;&#9472;&#9472;&#9472;&#9472;</span> <span class="hlg">RA (Router Advertisement)</span> <span class="dim">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</span><span class="dim">&#9474;</span>   Pr&auml;fix: <span class="hl">2001:db8::/64</span>
+  <span class="dim">&#9474;</span>                                          <span class="dim">&#9474;</span>
+  <span class="dim">&#9474;</span> <span class="hl2">Pr&auml;fix + Interface ID = Adresse</span>          <span class="dim">&#9474;</span>
+  <span class="dim">&#9474;</span> <span class="hl2">2001:db8::a1b2:c3ff:fed4:e5f6</span>            <span class="dim">&#9474;</span>
+  <span class="dim">&#9474;</span>                                          <span class="dim">&#9474;</span>
+  <span class="dim">&#9474;</span><span class="dim">&#9472;&#9472;&#9472;&#9472;</span> <span class="hlo">DAD</span> (Ist die Adresse frei?) <span class="dim">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&rarr;</span><span class="dim">&#9474;</span>
+  <span class="dim">&#9474;</span>                                          <span class="dim">&#9474;</span></div>
+
+  <div class="key-box cyan-border">
+    <h3>Interface ID: Wie wird sie erzeugt?</h3>
+    <ul>
+      <li><strong>EUI-64</strong> &ndash; Abgeleitet aus der MAC-Adresse (siehe Aufgabe 04)</li>
+      <li><strong>Privacy Extensions</strong> &ndash; Zuf&auml;llig generiert, um die MAC-Adresse nicht preiszugeben</li>
+    </ul>
+  </div>
+
+  <div class="compare" style="margin-top:16px">
+    <div class="compare-left">
+      <strong style="color:var(--accent)">SLAAC (stateless)</strong><br>
+      Host konfiguriert sich selbst<br>
+      <span style="color:var(--dim);font-size:.82rem">Kein Server trackt Adressen</span>
+    </div>
+    <div class="compare-arrow">vs.</div>
+    <div class="compare-right">
+      <strong style="color:var(--accent2)">DHCPv6 (stateful)</strong><br>
+      Server weist Adressen zu<br>
+      <span style="color:var(--dim);font-size:.82rem">Server kennt alle vergebenen Adressen</span>
+    </div>
+  </div>
+</div>
+
+<!-- Section 6: IPv6-Header -->
+<div class="section">
+  <div class="section-title">Sektion 6</div>
+  <h2>Der IPv6-Header</h2>
+  <p>Der IPv6-Header ist gegen&uuml;ber IPv4 <strong>vereinfacht</strong> worden und hat eine <strong>feste Gr&ouml;&szlig;e von 40 Bytes</strong>. Weniger Felder bedeuten schnellere Verarbeitung durch Router.</p>
+
+  <table class="info-table">
+    <thead>
+      <tr>
+        <th>Feld</th>
+        <th>Bits</th>
+        <th>Beschreibung</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>Version</code></td>
+        <td>4</td>
+        <td>Immer <strong>6</strong></td>
+      </tr>
+      <tr>
+        <td><code>Traffic Class</code></td>
+        <td>8</td>
+        <td>QoS-Priorit&auml;t (Quality of Service)</td>
+      </tr>
+      <tr>
+        <td><code>Flow Label</code></td>
+        <td>20</td>
+        <td>Identifiziert zusammengeh&ouml;rige Paketfl&uuml;sse</td>
+      </tr>
+      <tr>
+        <td><code>Payload Length</code></td>
+        <td>16</td>
+        <td>Gr&ouml;&szlig;e der Nutzdaten in Bytes</td>
+      </tr>
+      <tr>
+        <td><code>Next Header</code></td>
+        <td>8</td>
+        <td>N&auml;chstes Protokoll (TCP=6, UDP=17, ICMPv6=58)</td>
+      </tr>
+      <tr>
+        <td><code>Hop Limit</code></td>
+        <td>8</td>
+        <td>Wie TTL bei IPv4 &ndash; wird an jedem Router um 1 verringert</td>
+      </tr>
+      <tr>
+        <td><code>Source Address</code></td>
+        <td>128</td>
+        <td>Quelladresse</td>
+      </tr>
+      <tr>
+        <td><code>Destination Address</code></td>
+        <td>128</td>
+        <td>Zieladresse</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="key-box red-border">
+    <h3>Was FEHLT im Vergleich zu IPv4?</h3>
+    <ul>
+      <li><strong>KEINE Header-Pr&uuml;fsumme (Checksum)</strong> &ndash; Entfernt f&uuml;r bessere Performance. Die Integrit&auml;tspr&uuml;fung &uuml;bernehmen h&ouml;here Schichten (TCP/UDP).</li>
+      <li><strong>KEINE Fragmentierungs-Felder</strong> im Basis-Header &ndash; Verschoben in optionale Extension Headers. Router fragmentieren <strong>nicht</strong> mehr.</li>
+      <li><strong>KEIN Header-L&auml;ngenfeld</strong> &ndash; Der Header ist immer 40 Bytes lang, daher unn&ouml;tig.</li>
+    </ul>
+  </div>
+
+  <div class="key-box accent-border">
+    <h3>Extension Headers</h3>
+    <p>Zus&auml;tzliche, optionale Header werden &uuml;ber das <code>Next Header</code>-Feld verkettet. Jeder Extension Header verweist auf den n&auml;chsten. So bleibt der Basis-Header schlank und Router m&uuml;ssen nur den Basis-Header lesen.</p>
+  </div>
+</div>
+
+<!-- Section 7: Integrität -->
+<div class="section">
+  <div class="section-title">Sektion 7</div>
+  <h2>Integrit&auml;t</h2>
+  <p><strong>Datenintegrit&auml;t</strong> bedeutet: Die Daten kommen <strong>unver&auml;ndert</strong> beim Empf&auml;nger an. Nichts wurde unterwegs verf&auml;lscht, besch&auml;digt oder manipuliert.</p>
+
+  <div class="compare">
+    <div class="compare-left">
+      <strong style="color:var(--orange)">IPv4</strong><br>
+      Header-Pr&uuml;fsumme vorhanden<br>
+      <span style="color:var(--dim);font-size:.82rem">Muss an jedem Router neu berechnet werden (TTL &auml;ndert sich)</span>
+    </div>
+    <div class="compare-arrow">&rarr;</div>
+    <div class="compare-right">
+      <strong style="color:var(--accent)">IPv6</strong><br>
+      KEINE Header-Pr&uuml;fsumme<br>
+      <span style="color:var(--dim);font-size:.82rem">Integrit&auml;t wird delegiert an TCP/UDP und optional IPsec</span>
+    </div>
+  </div>
+
+  <div class="key-box accent-border" style="margin-top:16px">
+    <h3>Wer stellt die Integrit&auml;t sicher?</h3>
+    <ul>
+      <li><strong>Transportschicht</strong> &ndash; TCP- und UDP-Pr&uuml;fsummen (bei IPv6 ist die UDP-Pr&uuml;fsumme <strong>Pflicht</strong>, bei IPv4 optional)</li>
+      <li><strong>IPsec</strong> &ndash; Optional, aber IPv6 hat eingebaute Unterst&uuml;tzung. Bietet Authentifizierung und Verschl&uuml;sselung.</li>
+    </ul>
+  </div>
+
+  <div class="key-box green-border">
+    <h3>Warum wurde die Pr&uuml;fsumme entfernt?</h3>
+    <p><strong>Performance:</strong> Router mussten bei IPv4 an jedem Hop die Pr&uuml;fsumme neu berechnen (weil sich TTL &auml;ndert). Bei IPv6 entf&auml;llt dieser Aufwand &ndash; Router k&ouml;nnen Pakete schneller weiterleiten.</p>
+  </div>
+</div>
+
+<!-- Section 8: Multicast-Adressen -->
+<div class="section">
+  <div class="section-title">Sektion 8</div>
+  <h2>Wichtige Multicast-Adressen</h2>
+  <p>IPv6 nutzt Multicast intensiv &ndash; z.B. f&uuml;r Neighbor Discovery und SLAAC. Diese Adressen solltest du kennen:</p>
+
+  <div class="mc-ref">
+    <div class="mc-ref-row">
+      <span class="mc-ref-addr">ff02::1</span>
+      <span><strong>All Nodes</strong> &ndash; Alle Ger&auml;te auf dem Link (wie ein lokaler Broadcast)</span>
+    </div>
+    <div class="mc-ref-row">
+      <span class="mc-ref-addr">ff02::2</span>
+      <span><strong>All Routers</strong> &ndash; Alle Router auf dem Link (hierhin geht die RS bei SLAAC)</span>
+    </div>
+    <div class="mc-ref-row">
+      <span class="mc-ref-addr">ff02::1:ff00:0/104</span>
+      <span><strong>Solicited-Node Multicast</strong> &ndash; Wird f&uuml;r DAD und Neighbor Discovery verwendet. Basiert auf den letzten 24 Bit der IPv6-Adresse.</span>
+    </div>
+  </div>
+</div>
+
+<!-- Section 9: Tipps für die Klausur -->
+<div class="section">
+  <div class="section-title">Sektion 9</div>
+  <h2>Tipps f&uuml;r die Klausur</h2>
+
+  <div class="tip-box">
+    <h3>Das Wichtigste auf einen Blick</h3>
+    <ul>
+      <li>Kenne die <strong>3 &Uuml;bergangsstrategien</strong> und wann welche eingesetzt wird:
+        <br><code>Dual Stack</code> = beide Protokolle &middot; <code>Tunneling</code> = Kapselung &middot; <code>NAT64</code> = &Uuml;bersetzung</li>
+      <li><strong>SLAAC-Prozess</strong> in der richtigen Reihenfolge: <code>RS</code> &rarr; <code>RA</code> &rarr; Pr&auml;fix + Interface ID kombinieren &rarr; <code>DAD</code></li>
+      <li>Der IPv6-Header hat <strong>KEINE Pr&uuml;fsumme</strong> (Checksum) &ndash; im Gegensatz zu IPv4</li>
+      <li>IPv6-Header ist immer <strong>40 Bytes</strong> gro&szlig; (fest, keine variable L&auml;nge)</li>
+      <li><code>Next Header</code> bei IPv6 entspricht dem <code>Protocol</code>-Feld bei IPv4</li>
+      <li><code>Hop Limit</code> bei IPv6 entspricht <code>TTL</code> bei IPv4</li>
+      <li>NAT &ne; NAT64: NAT &uuml;bersetzt IPv4&harr;IPv4, NAT64 &uuml;bersetzt IPv6&harr;IPv4</li>
+      <li>Multicast-Adressen: <code>ff02::1</code> (All Nodes), <code>ff02::2</code> (All Routers)</li>
+    </ul>
+  </div>
+
+  <a href="05_begriffe.html" class="link-btn">Jetzt &uuml;ben: Aufgabe 05 &rarr;</a>
+</div>
+
+</div>
+</body>
+</html>

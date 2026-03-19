@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Erklärung – EUI-64: MAC → Interface ID</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#2a3550;--text:#e2e8f0;--dim:#64748b;--accent:#34d399;--accent2:#22d3ee;--green:#34d399;--red:#f87171;--orange:#fbbf24}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+.noise{position:fixed;top:0;left:0;width:100%;height:100%;opacity:.03;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.container{max-width:800px;margin:0 auto;padding:40px 24px;position:relative;z-index:1}
+nav{display:flex;align-items:center;gap:16px;margin-bottom:48px;flex-wrap:wrap}
+nav a{color:var(--dim);text-decoration:none;font-size:.9rem;transition:color .2s}nav a:hover{color:var(--accent)}
+.nav-sep{color:var(--border)}.nav-current{color:var(--text);font-weight:500}
+h1{font-size:1.8rem;font-weight:900;margin-bottom:8px}h1 span{color:var(--accent)}
+.subtitle{color:var(--dim);margin-bottom:40px;font-size:.95rem}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px}
+.section-title{font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.section h2{font-size:1.2rem;font-weight:700;margin-bottom:4px}
+.section h3{font-size:1.05rem;font-weight:700;margin-top:20px;margin-bottom:8px}
+.section-desc{color:var(--dim);font-size:.85rem;margin-bottom:24px}
+p{font-size:.92rem;line-height:1.7;margin-bottom:12px}
+p:last-child{margin-bottom:0}
+ul{margin:8px 0 16px 20px;font-size:.92rem;line-height:1.7}
+li{margin-bottom:6px}
+li:last-child{margin-bottom:0}
+code{font-family:'JetBrains Mono',monospace;background:rgba(52,211,153,.1);padding:2px 6px;border-radius:4px;font-size:.85rem;color:var(--accent)}
+.steps-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px;margin-top:16px}
+.step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
+.step:last-child{margin-bottom:0}
+.step-num{font-family:'JetBrains Mono',monospace;font-size:.75rem;font-weight:700;color:var(--bg);background:var(--accent);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-text{font-size:.9rem;line-height:1.6}
+.step-text code{font-family:'JetBrains Mono',monospace;background:rgba(52,211,153,.1);padding:2px 6px;border-radius:4px;font-size:.85rem;color:var(--accent)}
+.visual{font-family:'JetBrains Mono',monospace;font-size:.85rem;padding:20px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin:16px 0;line-height:2.2;overflow-x:auto}
+.visual .hl{color:var(--accent);font-weight:700}
+.visual .hl2{color:var(--orange);font-weight:700}
+.visual .ins{color:var(--orange);font-weight:700}
+.visual .dim{color:var(--dim)}
+.visual .red{color:var(--red);font-weight:700}
+.arrow-flow{font-family:'JetBrains Mono',monospace;font-size:.95rem;text-align:center;padding:16px;margin:16px 0;color:var(--dim)}
+.arrow-flow .hl{color:var(--accent);font-weight:700}
+.arrow-flow .ins{color:var(--orange);font-weight:700}
+.arrow-flow .arrow{color:var(--dim);margin:0 8px}
+
+/* Bit table */
+.bit-table{width:100%;border-collapse:collapse;margin:16px 0;font-family:'JetBrains Mono',monospace;font-size:.82rem}
+.bit-table th{background:var(--surface2);color:var(--dim);font-weight:700;padding:10px 12px;text-align:left;border-bottom:2px solid var(--border);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase}
+.bit-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.bit-table tr:last-child td{border-bottom:none}
+.bit-table .flip-bit{color:var(--orange);font-weight:700}
+.bit-table .result{color:var(--accent);font-weight:700}
+
+/* Big MAC display */
+.mac-display{font-family:'JetBrains Mono',monospace;font-size:1.3rem;text-align:center;padding:18px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;margin:16px 0;letter-spacing:.1em}
+.mac-display .hl{color:var(--accent);font-weight:700}
+.mac-display .ins{color:var(--orange);font-weight:700}
+.mac-display .dim{color:var(--dim)}
+
+/* Info box */
+.info-box{background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15);border-radius:10px;padding:16px 20px;margin:16px 0;font-size:.88rem;line-height:1.7}
+.info-box strong{color:var(--accent)}
+
+/* Warning box */
+.warn-box{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.15);border-radius:10px;padding:16px 20px;margin:16px 0;font-size:.88rem;line-height:1.7}
+.warn-box strong{color:var(--red)}
+
+/* Tip box */
+.tip-box{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.15);border-radius:10px;padding:16px 20px;margin:16px 0;font-size:.88rem;line-height:1.7}
+.tip-box strong{color:var(--orange)}
+
+/* Exercise link */
+.exercise-link{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--bg);font-weight:700;font-size:.9rem;padding:12px 24px;border-radius:10px;text-decoration:none;transition:all .2s;margin-top:8px}
+.exercise-link:hover{opacity:.85;transform:translateY(-1px)}
+.exercise-link .arrow{transition:transform .2s}
+.exercise-link:hover .arrow{transform:translateX(4px)}
+
+/* Bit position diagram */
+.bit-diagram{font-family:'JetBrains Mono',monospace;margin:16px 0;overflow-x:auto}
+.bit-row{display:flex;gap:0;justify-content:center;margin:4px 0}
+.bit-cell{width:42px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);font-size:.82rem;background:var(--surface2)}
+.bit-cell.header{background:transparent;border:none;color:var(--dim);font-size:.7rem;height:24px}
+.bit-cell.highlight{background:rgba(251,191,36,.15);border-color:var(--orange);color:var(--orange);font-weight:700}
+.bit-cell.flipped{background:rgba(52,211,153,.15);border-color:var(--accent);color:var(--accent);font-weight:700}
+
+@media(max-width:600px){
+  .container{padding:24px 16px}
+  .section{padding:24px 18px}
+  h1{font-size:1.4rem}
+  .visual{font-size:.75rem;padding:14px}
+  .bit-cell{width:34px;height:30px;font-size:.72rem}
+  .mac-display{font-size:1rem}
+  .bit-table{font-size:.72rem}
+  .bit-table td,.bit-table th{padding:8px 6px}
+}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="container">
+
+<nav>
+  <a href="index.html">&larr; &Uuml;bersicht</a><span class="nav-sep">/</span><span class="nav-current">Erkl&auml;rung: EUI-64</span><span class="nav-sep">/</span><a href="04_eui64.html">&Uuml;bung &rarr;</a>
+</nav>
+
+<h1>EUI-64 <span>erkl&auml;rt</span></h1>
+<p class="subtitle">Wie eine MAC-Adresse zur IPv6 Interface-ID wird &mdash; Schritt f&uuml;r Schritt.</p>
+
+<!-- ===== Section 1: Warum EUI-64? ===== -->
+<div class="section">
+  <div class="section-title">Hintergrund</div>
+  <h2>Warum EUI-64?</h2>
+  <p class="section-desc">Das Problem: IPv6 braucht 64 Bit, eine MAC-Adresse hat nur 48 Bit.</p>
+
+  <p>Jede IPv6-Adresse besteht aus zwei H&auml;lften: dem <strong>Netzwerk-Pr&auml;fix</strong> (64 Bit) und der <strong>Interface-ID</strong> (64 Bit). Die Interface-ID muss das Ger&auml;t im Subnetz eindeutig identifizieren.</p>
+
+  <p>Jede Netzwerkkarte besitzt bereits eine weltweit eindeutige Kennung: die <strong>MAC-Adresse</strong>. Allerdings ist sie nur <strong>48 Bit</strong> lang &mdash; es fehlen also 16 Bit.</p>
+
+  <p>Genau hier kommt das <strong>EUI-64-Verfahren</strong> (Extended Unique Identifier, 64 Bit) ins Spiel:</p>
+
+  <ul>
+    <li>Es wandelt die 48-Bit-MAC in eine <strong>64-Bit-Interface-ID</strong> um.</li>
+    <li>Wird von <strong>SLAAC</strong> (Stateless Address Autoconfiguration) genutzt &mdash; das Ger&auml;t generiert seine IPv6-Adresse <em>selbst</em>, ohne DHCP-Server.</li>
+    <li>Ergebnis: eine <strong>global eindeutige Interface-ID</strong>, abgeleitet aus der Hardware-Adresse.</li>
+  </ul>
+
+  <div class="info-box">
+    <strong>Merke:</strong> EUI-64 = &bdquo;Nimm die MAC-Adresse, mach 64 Bit daraus.&ldquo; Dazu braucht es genau <strong>4 Schritte</strong>.
+  </div>
+</div>
+
+<!-- ===== Section 2: Die 4 Schritte ===== -->
+<div class="section">
+  <div class="section-title">Verfahren</div>
+  <h2>Die 4 Schritte im Detail</h2>
+  <p class="section-desc">Am Beispiel der MAC-Adresse <code>00:1A:2B:3C:4D:5E</code></p>
+
+  <!-- Schritt 1 -->
+  <h3>Schritt 1: MAC-Adresse aufteilen</h3>
+  <p>Eine MAC-Adresse besteht aus <strong>6 Bytes</strong> (Oktetten), geschrieben als Hex-Paare:</p>
+
+  <div class="mac-display">
+    <span class="hl">00:1A:2B</span><span class="dim"> : </span><span class="hl">3C:4D:5E</span>
+  </div>
+
+  <p>Wir teilen nach dem <strong>3. Oktett</strong> in zwei H&auml;lften:</p>
+  <ul>
+    <li><strong>Erste H&auml;lfte (OUI)</strong> &mdash; Organizationally Unique Identifier: identifiziert den <em>Hersteller</em> der Netzwerkkarte.</li>
+    <li><strong>Zweite H&auml;lfte</strong> &mdash; Ger&auml;tespezifischer Teil: eindeutig pro Ger&auml;t innerhalb des Herstellers.</li>
+  </ul>
+
+  <div class="visual">
+    <span class="dim">MAC:</span>  00:1A:2B:3C:4D:5E<br>
+    <span class="dim">Split:</span> <span class="hl">00:1A:2B</span> <span class="dim">|</span> <span class="hl">3C:4D:5E</span><br>
+    <span class="dim">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  &uarr; OUI &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&uarr; Ger&auml;t</span>
+  </div>
+
+  <!-- Schritt 2 -->
+  <h3>Schritt 2: FF:FE einf&uuml;gen</h3>
+  <p>Zwischen die beiden H&auml;lften werden die Bytes <code>FF:FE</code> eingef&uuml;gt. Damit wird der 48-Bit-Wert auf <strong>64 Bit</strong> erweitert (6 Bytes &rarr; 8 Bytes):</p>
+
+  <div class="mac-display">
+    <span class="hl">00:1A:2B</span><span class="dim">:</span><span class="ins">FF:FE</span><span class="dim">:</span><span class="hl">3C:4D:5E</span>
+  </div>
+
+  <div class="visual">
+    <span class="dim">Vorher (48 Bit):</span> 00:1A:2B <span class="dim">|</span> 3C:4D:5E<br>
+    <span class="dim">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;</span><br>
+    <span class="dim">Nachher (64 Bit):</span> 00:1A:2B:<span class="ins">FF:FE</span>:3C:4D:5E
+  </div>
+
+  <div class="info-box">
+    <strong>Warum FF:FE?</strong> IEEE hat diese Werte reserviert. Sie signalisieren: &bdquo;Diese 64-Bit-ID wurde aus einer 48-Bit-MAC-Adresse abgeleitet.&ldquo;
+  </div>
+
+  <!-- Schritt 3 -->
+  <h3>Schritt 3: Das U/L-Bit flippen (7. Bit von links)</h3>
+  <p>Das ist der <strong>schwierigste Schritt</strong> &mdash; hier passieren die meisten Fehler. Deshalb erkl&auml;ren wir ihn besonders gr&uuml;ndlich.</p>
+
+  <p><strong>Was ist das U/L-Bit?</strong></p>
+  <p>Das erste Oktett der MAC-Adresse hat 8 Bits. Das <strong>7. Bit von links</strong> (= Bit mit Wertigkeit 2, Position 0x02) hei&szlig;t <strong>Universal/Local-Bit (U/L-Bit)</strong>:</p>
+
+  <ul>
+    <li><strong>0</strong> = universally administered &rarr; MAC-Adresse wurde vom Hersteller vergeben (Normalfall)</li>
+    <li><strong>1</strong> = locally administered &rarr; MAC-Adresse wurde lokal/manuell ge&auml;ndert</li>
+  </ul>
+
+  <p><strong>Warum wird es invertiert?</strong></p>
+  <p>Die IEEE hat f&uuml;r EUI-64 die Bedeutung <em>umgedreht</em>: In der Interface-ID bedeutet <strong>1 = global eindeutig</strong> (Gegenteil der MAC-Konvention). Deshalb wird das Bit <strong>geflippt</strong> (invertiert).</p>
+
+  <p><strong>Schritt f&uuml;r Schritt:</strong></p>
+
+  <div class="steps-box">
+    <div class="step"><div class="step-num">a</div><div class="step-text">Nimm das <strong>erste Oktett</strong> in Hex: <code>00</code></div></div>
+    <div class="step"><div class="step-num">b</div><div class="step-text">Wandle in Bin&auml;r um: <code>00000000</code></div></div>
+    <div class="step"><div class="step-num">c</div><div class="step-text">Identifiziere das <strong>7. Bit von links</strong> (2. von rechts, Wertigkeit 2):</div></div>
+  </div>
+
+  <!-- Bit diagram for 00 -->
+  <div class="bit-diagram">
+    <div class="bit-row">
+      <div class="bit-cell header">Bit 8</div>
+      <div class="bit-cell header">Bit 7</div>
+      <div class="bit-cell header">Bit 6</div>
+      <div class="bit-cell header">Bit 5</div>
+      <div class="bit-cell header">Bit 4</div>
+      <div class="bit-cell header">Bit 3</div>
+      <div class="bit-cell header">Bit 2</div>
+      <div class="bit-cell header">Bit 1</div>
+    </div>
+    <div class="bit-row">
+      <div class="bit-cell header">128</div>
+      <div class="bit-cell header">64</div>
+      <div class="bit-cell header">32</div>
+      <div class="bit-cell header">16</div>
+      <div class="bit-cell header">8</div>
+      <div class="bit-cell header">4</div>
+      <div class="bit-cell header">2</div>
+      <div class="bit-cell header">1</div>
+    </div>
+    <div class="bit-row">
+      <div class="bit-cell">0</div>
+      <div class="bit-cell">0</div>
+      <div class="bit-cell">0</div>
+      <div class="bit-cell">0</div>
+      <div class="bit-cell">0</div>
+      <div class="bit-cell">0</div>
+      <div class="bit-cell highlight">0</div>
+      <div class="bit-cell">0</div>
+    </div>
+  </div>
+
+  <div class="steps-box">
+    <div class="step"><div class="step-num">d</div><div class="step-text"><strong>Bit flippen</strong> (XOR mit 0x02):<br>0000000<span style="color:var(--orange);font-weight:700">0</span> &rarr; 0000001<span style="color:var(--accent);font-weight:700">0</span></div></div>
+    <div class="step"><div class="step-num">e</div><div class="step-text">Zur&uuml;ck in Hex: <code>00000010</code> = <code>02</code></div></div>
+  </div>
+
+  <!-- Bit diagram after flip -->
+  <div class="bit-diagram">
+    <div class="bit-row">
+      <div class="bit-cell header">128</div>
+      <div class="bit-cell header">64</div>
+      <div class="bit-cell header">32</div>
+      <div class="bit-cell header">16</div>
+      <div class="bit-cell header">8</div>
+      <div class="bit-cell header">4</div>
+      <div class="bit-cell header">2</div>
+      <div class="bit-cell header">1</div>
+    </div>
+    <div class="bit-row">
+      <div class="bit-cell">0</div>
+      <div class="bit-cell">0</div>
+      <div class="bit-cell">0</div>
+      <div class="bit-cell">0</div>
+      <div class="bit-cell">0</div>
+      <div class="bit-cell">0</div>
+      <div class="bit-cell flipped">1</div>
+      <div class="bit-cell">0</div>
+    </div>
+  </div>
+
+  <p style="margin-top:16px"><strong>Weiteres Beispiel:</strong> Erstes Oktett = <code>0C</code></p>
+  <div class="visual">
+    <span class="dim">Hex:</span>&nbsp;&nbsp;&nbsp;&nbsp;0C<br>
+    <span class="dim">Bin&auml;r:</span>&nbsp;&nbsp;0000110<span class="hl2">0</span><br>
+    <span class="dim">Flip:</span>&nbsp;&nbsp;&nbsp;0000111<span class="hl">0</span><br>
+    <span class="dim">Hex:</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="hl">0E</span>
+  </div>
+
+  <p style="margin-top:20px"><strong>&Uuml;bersichtstabelle:</strong> Bit-Flip-Beispiele</p>
+  <table class="bit-table">
+    <thead>
+      <tr>
+        <th>Hex</th>
+        <th>Bin&auml;r</th>
+        <th>Nach Flip</th>
+        <th>Neues Hex</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>00</td>
+        <td>0000000<span class="flip-bit">0</span></td>
+        <td>0000001<span class="result">0</span></td>
+        <td class="result">02</td>
+      </tr>
+      <tr>
+        <td>08</td>
+        <td>0000100<span class="flip-bit">0</span></td>
+        <td>0000101<span class="result">0</span></td>
+        <td class="result">0A</td>
+      </tr>
+      <tr>
+        <td>0C</td>
+        <td>0000110<span class="flip-bit">0</span></td>
+        <td>0000111<span class="result">0</span></td>
+        <td class="result">0E</td>
+      </tr>
+      <tr>
+        <td>02</td>
+        <td>0000001<span class="flip-bit">0</span></td>
+        <td>0000000<span class="result">0</span></td>
+        <td class="result">00</td>
+      </tr>
+      <tr>
+        <td>AA</td>
+        <td>1010101<span class="flip-bit">0</span></td>
+        <td>1010100<span class="result">0</span></td>
+        <td class="result">A8</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="tip-box">
+    <strong>Trick:</strong> Der Bit-Flip ist nichts anderes als <strong>XOR mit 0x02</strong>. In der Klausur: Immer das erste Oktett in Bin&auml;r aufschreiben, das 7. Bit von links flippen, und zur&uuml;ck in Hex umrechnen.
+  </div>
+
+  <!-- Schritt 4 -->
+  <h3>Schritt 4: Als IPv6-Hextets gruppieren</h3>
+  <p>Die 8 Bytes werden zu <strong>4 Hextets</strong> zusammengefasst (je 2 Bytes = 16 Bit = 1 Hextet):</p>
+
+  <div class="visual">
+    <span class="dim">Bytes:</span>&nbsp;&nbsp;<span class="hl">02</span>:<span class="hl">1A</span>:<span class="hl">2B</span>:<span class="ins">FF</span>:<span class="ins">FE</span>:<span class="hl">3C</span>:<span class="hl">4D</span>:<span class="hl">5E</span><br><br>
+    <span class="dim">Hextet 1:</span> <span class="hl">02</span> <span class="hl">1A</span> &rarr; <span class="hl">021a</span><br>
+    <span class="dim">Hextet 2:</span> <span class="hl">2B</span> <span class="ins">FF</span> &rarr; <span class="hl">2bff</span><br>
+    <span class="dim">Hextet 3:</span> <span class="ins">FE</span> <span class="hl">3C</span> &rarr; <span class="hl">fe3c</span><br>
+    <span class="dim">Hextet 4:</span> <span class="hl">4D</span> <span class="hl">5E</span> &rarr; <span class="hl">4d5e</span><br><br>
+    <span class="dim">Interface-ID:</span> <span class="hl">021a:2bff:fe3c:4d5e</span>
+  </div>
+</div>
+
+<!-- ===== Section 3: Vollständiges Beispiel ===== -->
+<div class="section">
+  <div class="section-title">Beispiel 1</div>
+  <h2>Vollst&auml;ndiges Beispiel</h2>
+  <p class="section-desc">MAC-Adresse: <code>00:1A:2B:3C:4D:5E</code> &rarr; Link-Local-Adresse</p>
+
+  <div class="steps-box">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text"><strong>Aufteilen:</strong><br>
+        <code>00:1A:2B</code> | <code>3C:4D:5E</code></div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text"><strong>FF:FE einf&uuml;gen:</strong><br>
+        <code>00:1A:2B:<span style="color:var(--orange)">FF:FE</span>:3C:4D:5E</code></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text"><strong>U/L-Bit flippen:</strong><br>
+        <code>00</code> &rarr; <code>00000000</code> &rarr; <code>0000001<span style="color:var(--orange)">0</span></code> &rarr; <code style="color:var(--accent)">02</code></div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text"><strong>Hextets gruppieren:</strong><br>
+        <code>02:1A:2B:FF:FE:3C:4D:5E</code> &rarr; <code>021a:2bff:fe3c:4d5e</code></div>
+    </div>
+  </div>
+
+  <div class="visual" style="text-align:center;font-size:1rem;line-height:2.5">
+    <span class="dim">MAC:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;00:1A:2B:3C:4D:5E<br>
+    <span class="dim">&darr; Schritt 1+2</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;00:1A:2B:<span class="ins">FF:FE</span>:3C:4D:5E<br>
+    <span class="dim">&darr; Schritt 3 (Bit-Flip)</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="hl">02</span>:1A:2B:<span class="ins">FF:FE</span>:3C:4D:5E<br>
+    <span class="dim">&darr; Schritt 4 (Gruppieren)</span><br>
+    <span class="dim">IID:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="hl">021a:2bff:fe3c:4d5e</span><br>
+    <span class="dim">&darr; Link-Local-Pr&auml;fix + IID</span><br>
+    <span class="hl" style="font-size:1.1rem">fe80::021a:2bff:fe3c:4d5e</span>
+  </div>
+
+  <div class="info-box">
+    <strong>Link-Local-Adresse</strong> = <code>fe80::</code> + Interface-ID. Die 0en zwischen fe80 und der IID werden mit <code>::</code> abgek&uuml;rzt.
+  </div>
+</div>
+
+<!-- ===== Beispiel 2 ===== -->
+<div class="section">
+  <div class="section-title">Beispiel 2</div>
+  <h2>Zweites Beispiel</h2>
+  <p class="section-desc">MAC-Adresse: <code>AA:BB:CC:DD:EE:FF</code> &rarr; Link-Local-Adresse</p>
+
+  <div class="steps-box">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text"><strong>Aufteilen:</strong><br>
+        <code>AA:BB:CC</code> | <code>DD:EE:FF</code></div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text"><strong>FF:FE einf&uuml;gen:</strong><br>
+        <code>AA:BB:CC:<span style="color:var(--orange)">FF:FE</span>:DD:EE:FF</code></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text"><strong>U/L-Bit flippen:</strong><br>
+        <code>AA</code> &rarr; <code>1010101<span style="color:var(--orange)">0</span></code> &rarr; <code>1010100<span style="color:var(--accent)">0</span></code> &rarr; <code style="color:var(--accent)">A8</code><br>
+        <span style="color:var(--dim);font-size:.82rem">(Das 7. Bit war 1, wird zu 0)</span></div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text"><strong>Hextets gruppieren:</strong><br>
+        <code>A8:BB:CC:FF:FE:DD:EE:FF</code> &rarr; <code>a8bb:ccff:fedd:eeff</code></div>
+    </div>
+  </div>
+
+  <div class="visual" style="text-align:center;font-size:1rem;line-height:2.5">
+    <span class="dim">MAC:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AA:BB:CC:DD:EE:FF<br>
+    <span class="dim">&darr; Schritt 1+2</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AA:BB:CC:<span class="ins">FF:FE</span>:DD:EE:FF<br>
+    <span class="dim">&darr; Schritt 3 (Bit-Flip)</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="hl">A8</span>:BB:CC:<span class="ins">FF:FE</span>:DD:EE:FF<br>
+    <span class="dim">&darr; Schritt 4 (Gruppieren)</span><br>
+    <span class="dim">IID:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="hl">a8bb:ccff:fedd:eeff</span><br>
+    <span class="dim">&darr; Link-Local-Pr&auml;fix + IID</span><br>
+    <span class="hl" style="font-size:1.1rem">fe80::a8bb:ccff:fedd:eeff</span>
+  </div>
+
+  <div class="tip-box">
+    <strong>Beachte:</strong> Hier wurde das 7. Bit von <strong>1 auf 0</strong> geflippt (AA &rarr; A8). Der Flip geht in <em>beide</em> Richtungen! Er kehrt das Bit immer um, egal ob es vorher 0 oder 1 war.
+  </div>
+</div>
+
+<!-- ===== Section 4: Privacy Extensions ===== -->
+<div class="section">
+  <div class="section-title">Datenschutz</div>
+  <h2>Privacy Extensions</h2>
+  <p class="section-desc">Warum EUI-64 ein Datenschutzproblem hat.</p>
+
+  <p>Da die Interface-ID direkt aus der MAC-Adresse abgeleitet wird, kann man aus jeder EUI-64-basierten IPv6-Adresse die <strong>Hardware-Adresse des Ger&auml;ts ablesen</strong>. Das bedeutet:</p>
+
+  <ul>
+    <li>Ein Ger&auml;t ist <strong>&uuml;ber verschiedene Netze hinweg identifizierbar</strong> (Tracking).</li>
+    <li>Der <strong>Hersteller</strong> der Netzwerkkarte ist sichtbar (OUI).</li>
+  </ul>
+
+  <div class="warn-box">
+    <strong>Datenschutzproblem:</strong> Wer die IPv6-Adresse kennt, kennt auch die MAC-Adresse &mdash; und kann das Ger&auml;t verfolgen.
+  </div>
+
+  <p><strong>Die L&ouml;sung: Privacy Extensions (RFC 4941)</strong></p>
+  <p>Moderne Betriebssysteme generieren stattdessen eine <strong>zuf&auml;llige Interface-ID</strong>, die sich regelm&auml;&szlig;ig &auml;ndert. Dadurch ist keine R&uuml;ckverfolgung zur MAC-Adresse m&ouml;glich.</p>
+
+  <p>Trotzdem ist EUI-64 weiterhin wichtig:</p>
+  <ul>
+    <li>Es wird in der <strong>Klausur abgefragt</strong>.</li>
+    <li>Viele <strong>Router und IoT-Ger&auml;te</strong> nutzen es weiterhin.</li>
+    <li><strong>Link-Local-Adressen</strong> werden auf manchen Systemen noch mit EUI-64 gebildet.</li>
+  </ul>
+</div>
+
+<!-- ===== Section 5: Tipps für die Klausur ===== -->
+<div class="section">
+  <div class="section-title">Klausurvorbereitung</div>
+  <h2>Tipps f&uuml;r die Klausur</h2>
+  <p class="section-desc">Die h&auml;ufigsten Fehler vermeiden.</p>
+
+  <div class="steps-box">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text"><strong>Bit-Flip immer aufschreiben!</strong><br>
+        Versuche den Bit-Flip niemals im Kopf. Schreibe <em>immer</em> das erste Oktett in Bin&auml;r, flippe das 7. Bit, und rechne zur&uuml;ck in Hex.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text"><strong>FF:FE geh&ouml;rt in die MITTE!</strong><br>
+        Nicht an den Anfang, nicht ans Ende &mdash; sondern exakt zwischen Byte 3 und Byte 4 der MAC-Adresse.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text"><strong>Der Bit-Flip = XOR mit 0x02</strong><br>
+        Das bedeutet: das Bit mit Wertigkeit 2 (7. von links, 2. von rechts) wird invertiert. Wenn es 0 war, wird es 1 &mdash; und umgekehrt.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text"><strong>Reihenfolge einpr&auml;gen:</strong><br>
+        Aufteilen &rarr; FF:FE einf&uuml;gen &rarr; Bit flippen &rarr; Gruppieren<br>
+        <span style="color:var(--dim);font-size:.82rem">(Eselsbr&uuml;cke: &bdquo;<strong>A</strong>lle <strong>F</strong>r&ouml;sche <strong>F</strong>lippen <strong>G</strong>ern&ldquo;)</span></div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-text"><strong>Link-Local nicht vergessen:</strong><br>
+        Die vollst&auml;ndige Adresse ist <code>fe80::</code> + Interface-ID. Das <code>::</code> steht f&uuml;r die fehlenden Nullen zwischen Pr&auml;fix und IID.</div>
+    </div>
+  </div>
+
+  <div style="margin-top:24px;text-align:center">
+    <a class="exercise-link" href="04_eui64.html">
+      Jetzt &uuml;ben: EUI-64 Aufgaben <span class="arrow">&rarr;</span>
+    </a>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
